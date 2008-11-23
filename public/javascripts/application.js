@@ -167,13 +167,13 @@ function draw() {
 
 
 function back(){
-    var orgIsDrawing = isDrawing;
     if(polyline == null) return;
     var count = polyline.getVertexCount();
     if(count > 0){
 	polyline.deleteVertex(count-1);
     }
-    if(orgIsDrawing) drow();
+    showLength();
+    if(isDrawing) draw();
 }
 
 function showLength(){
