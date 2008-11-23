@@ -167,13 +167,12 @@ function draw() {
 
 
 function back(){
-  isDrawing = false;
-  if(polyline == null) return;
-  var count = polyline.getVertexCount();
-  if(count > 0){
-      polyline.deleteVertex(count-1);
-  }
-  
+    if(polyline == null) return;
+    var count = polyline.getVertexCount();
+    if(count > 0){
+	polyline.deleteVertex(count-1);
+    }
+    if(isDrawing) drow();
 }
 
 function showLength(){
