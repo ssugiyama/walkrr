@@ -12,6 +12,7 @@ function onLoad(){
     map = new GMap2(document.getElementById("map"));
     map.addMapType(G_PHYSICAL_MAP);
     map.removeMapType(G_HYBRID_MAP);
+    map.enableGoogleBar();
 //    map.enableScrollWheelZoom();
     map.addControl(new GLargeMapControl());
     map.addControl(new GMenuMapTypeControl());
