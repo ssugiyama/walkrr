@@ -1,3 +1,3 @@
-page.replace_html "tbody", to_tbody(@walks)
+page.replace_html "tbody", render(:partial => 'tbody', :locals => {:walks => @walks})
 page.replace_html "message", @message
 page.replace_html "pagination", ""
