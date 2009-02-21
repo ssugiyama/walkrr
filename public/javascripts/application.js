@@ -7,7 +7,7 @@ var marker;
 var isDrawing = false;
 var streetView;
 var client;
-function onLoad(){
+$(document).ready(function (){
     //    google.load("maps", "2", {"locale" : "ja_JP"});
     map = new GMap2(document.getElementById("map"));
     map.addMapType(G_PHYSICAL_MAP);
@@ -24,11 +24,16 @@ function onLoad(){
     map.addOverlay(marker);
     handler = GEvent.addListener(map, "click", handleClick);
     points = new Array();
-    Event.addBehavior.reassignAfterAjax = true;
-    Event.addBehavior({
-        'div.pagination a' : Remote.Link
+    $(".pagination a").live('click', function() {
+      var el = $(this);
+
+      $.get(el.attr('href'), null, null, 'script');
+      return false;
+
     });
-}
+    $("#date").datepicker({ dateFormat: 'yy-mm-dd' });
+    $("#tabs").tabs();
+});
 
 function clearPath() {
 
@@ -48,7 +53,7 @@ function setPath(id){
         points.push(vertex.lng() + " " + vertex.lat())
     }
 
-    $(id).value = points.join(",");
+    $(id).val(points.join(","));
 }
 
 var panoramaIndex;
@@ -73,7 +78,7 @@ function getYaw(pt1, pt2){
 }
 
 function showPanorama(pt1, pt2) {
-    $("panorama").style.display = "block";
+    $("#panorama").show();
 
     var yaw, pov;
     if(pt2){
@@ -115,7 +120,7 @@ function prevPanorama(){
 }
 
 function hidePanorama(){
-    $("panorama").style.display = "none";
+    $("#panorama").hide();
 }
 function redrawPolyline(points){
     if(polyline != null){
@@ -184,13 +189,13 @@ function showLength(){
     else{
         len = 0;
     }
-    $("length").innerHTML = len;
+    $("#length").text(len);
 }
 
 function setLatLng(){
     var pt = marker.getLatLng();
-    $("latitude").value = pt.lat();
-    $("longitude").value = pt.lng();
+    $("#latitude").val(pt.lat());
+    $("#longitude").val(pt.lng());
 }
 
 function length(){
@@ -203,30 +208,19 @@ function length(){
 }
 
 function getImportPath(frame){
-    var doc = frame.contentWindow.document;
-    var pres = doc.getElementsByTagName("pre");
-    var text = pres[0].innerHTML;
+    var pres = frame.contents().find("pre");
+    var text = pres.text();
     showPath(text)
 }
 function importFile(){
-    var frame = $("import_frame");
-    var form = $("import_form");
-    if(document.all){
-        frame.onreadystatechange = function () {
-            if (this.readyState == "complete") {
-                getImportPath(frame);
-                this.onreadystatechange = null;
-            }
-        }
-    }
-    else {
-        frame.onload = function () {
-            getImportPath(frame);
-        }
-    }		
+    var frame = $("#import_frame");
+    var form = $("#import_form");
+    frame.load(function () {
+        getImportPath(frame);
+    });
+	
     form.submit();
 }
 
-GEvent.addDomListener(window, "load", onLoad);
 GEvent.addDomListener(window, "unload", GUnload);
 

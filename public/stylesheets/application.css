@@ -1,4 +1,6 @@
-
+body {
+    font-size: 11px;
+}
 a.button {
 	border: 2px outset black;
 	text-decoration: none;
@@ -41,11 +43,23 @@ table{
     border-collapse: collapse;
 }
 tr.even{
-	background-color: #cccccc;
+	background-color: #0078ae;
+    color: white;
 }
 tr.odd{
-	background-color: #80ccff;
-}  
+	background-color: #6eac2c;
+    color: white;
+}
+
+tr.even a {
+    color: white;
+    font-weight: bold;
+}
+
+tr.odd a {
+    color: white;
+    font-weight: bold;
+}
 
 form {
 	display: inline;
@@ -82,4 +96,11 @@ form {
 	margin: 2px;
 	border: 1px solid #eee;
 	color: #ddd;
+}
+
+#message {
+    padding: 2px 5px 2px 5px;
+	margin: 2px;
+    font-weight: bold;
+    font-size: 120%;
 }
