@@ -104,3 +104,12 @@ form {
     font-weight: bold;
     font-size: 120%;
 }
+#length {
+    color: #ff0000;
+}
+#top_left {
+    float : left;
+}
+#top_right {
+    float : right;
+}

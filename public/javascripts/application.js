@@ -1,12 +1,15 @@
 // Place your application-specific JavaScript functions and classes here
 // This file is automatically included by javascript_include_tag :defaults
 var map;
-var polyline;
+var selectedPolyline;
 var handler;
 var marker;
 var isDrawing = false;
 var streetView;
 var client;
+
+var generalStyle = { color : "#0000ff"};
+var selectedStyle = { color : "#ff0000", opacity : 0.5};
 $(document).ready(function (){
     //    google.load("maps", "2", {"locale" : "ja_JP"});
     map = new GMap2(document.getElementById("map"));
@@ -20,8 +23,7 @@ $(document).ready(function (){
     client = new GStreetviewClient();
     var pt = new GLatLng(35.690,139.700);
     map.setCenter(pt, 13);
-    marker = new GMarker(pt);
-    map.addOverlay(marker);
+    addMarker();
     handler = GEvent.addListener(map, "click", handleClick);
     points = new Array();
     $(".pagination a").live('click', function() {
@@ -35,21 +37,34 @@ $(document).ready(function (){
     $("#tabs").tabs();
 });
 
-function clearPath() {
+function addMarker (){
+    marker = new GMarker(map.getCenter());
+    map.addOverlay(marker);
+}
 
-    if(polyline != null){
-        map.removeOverlay(polyline);
-        polyline = null;
+function deletePath() {
+
+    if(selectedPolyline != null){
+        map.removeOverlay(selectedPolyline);
+        selectedPolyline = null;
     }
     isDrawing = false;
 }
 
-function setPath(id){
-    if(polyline == null) return;
+function deleteAll() {
+    map.clearOverlays();
+    selectedPolyline = null;
+    marker = null;
+    isDrawing = false;
+    
+}
+
+function retrievePointsFromPath(id){
+    if(selectedPolyline == null) return;
     var points = [];
-    var count = polyline.getVertexCount();
+    var count = selectedPolyline.getVertexCount();
     for (var i = 0; i < count; i++){
-        var vertex = polyline.getVertex(i);
+        var vertex = selectedPolyline.getVertex(i);
         points.push(vertex.lng() + " " + vertex.lat())
     }
 
@@ -58,7 +73,7 @@ function setPath(id){
 
 var panoramaIndex;
 function showPath(str) {
-    clearPath();
+//    clearPath();
     var pts = str.split(",");
     var points = [];
     for(var i = 0; i < pts.length; i++){
@@ -67,8 +82,8 @@ function showPath(str) {
         if(ps.length < 2) continue;
         points.push(new GLatLng(ps[1], ps[0]));
     }
-    redrawPolyline(points);
-    map.panTo(polyline.getBounds().getCenter());
+    addPolyline(points);
+    map.panTo(selectedPolyline.getBounds().getCenter());
 }
 
 function getYaw(pt1, pt2){
@@ -98,42 +113,55 @@ function nearestPanorama(){
 }
 function nextPanorama(){
     var pt1, pt2;
-    if(!polyline) return;
+    if(!selectedPolyline) return;
     
-    var count = polyline.getVertexCount();
+    var count = selectedPolyline.getVertexCount();
     if(panoramaIndex+1 >= count) return;
     panoramaIndex++;
-    pt1 = polyline.getVertex(panoramaIndex);
-    pt2 = (panoramaIndex+1 < count)?polyline.getVertex(panoramaIndex+1):null;
+    pt1 = selectedPolyline.getVertex(panoramaIndex);
+    pt2 = (panoramaIndex+1 < count)?selectedPolyline.getVertex(panoramaIndex+1):null;
     showPanorama(pt1, pt2);
 }
 
 function prevPanorama(){
     var pt1, pt2;
-    if(!polyline) return;
+    if(!selectedPolyline) return;
     
     if(panoramaIndex <= 0) return;
     panoramaIndex--;
-    pt1 = polyline.getVertex(panoramaIndex);
-    pt2 = polyline.getVertex(panoramaIndex+1);
+    pt1 = selectedPolyline.getVertex(panoramaIndex);
+    pt2 = selectedPolyline.getVertex(panoramaIndex+1);
     showPanorama(pt1, pt2);
 }
 
 function hidePanorama(){
     $("#panorama").hide();
 }
-function redrawPolyline(points){
-    if(polyline != null){
-        map.removeOverlay(polyline);
-    }
-    polyline = new GPolyline(points);
-    map.addOverlay(polyline);
-    showLength();
+function addPolyline(points){
+//    if(polyline != null){
+//        map.removeOverlay(polyline);
+//    }
+    var pl = new GPolyline(points);
+    map.addOverlay(pl);
+    setSelectedPolylne(pl);
+    
     panoramaIndex = -1;
+    GEvent.addListener(pl, "lineupdated", showLength);
+    GEvent.addListener(pl, "endline", endDraw);
+    GEvent.addListener(pl, "cancelline", endDraw);
+}
+
+function setSelectedPolylne(pl){
+    if(selectedPolyline){
+        selectedPolyline.setStrokeStyle(generalStyle);
+    }
+    selectedPolyline = pl;
+    selectedPolyline.setStrokeStyle(selectedStyle);
+    showLength();
 }
 
 function handleClick(overlay, point){
-    if(point == null)  return;
+//    if(point == null)  return;
     /*
     if($("edit").checked){
 		if(points.length == 0){
@@ -145,46 +173,52 @@ function handleClick(overlay, point){
 	}
 	else{
      */
-    if(isDrawing){
-        showLength();
+    if(overlay instanceof GPolyline){
+        setSelectedPolylne(overlay)
+    }
+    else if(isDrawing){
+  //      showLength();
     }
     else{
+        if(!marker) addMarker();
         marker.setLatLng(point);
     }
 }
 
 function endDraw(){
     isDrawing = false;
-    showLength();
-    GEvent.clearListeners(polyline, "endline");
-    GEvent.clearListeners(polyline, "cancelline");
+ 
+ //   GEvent.clearListeners(selectedPolyline, "lineupdated");
+//    GEvent.clearListeners(selectedPolyline, "endline");
+//    GEvent.clearListeners(selectedPolyline, "cancelline");
 }
 function draw() {
-    if(polyline == null){
-        polyline = new GPolyline(points);
-        map.addOverlay(polyline);
-        panoramaIndex = -1;
+    if(selectedPolyline == null){
+        return;
     }
     isDrawing = true;
-    polyline.enableDrawing();
-    GEvent.addListener(polyline, "endline", endDraw);
-    GEvent.addListener(polyline, "cancelline", endDraw);
+    selectedPolyline.enableDrawing();
+
 }
 
+function newPath() {
+    addPolyline([])
+    draw();
+}
 
 function back(){
-    if(polyline == null) return;
-    var count = polyline.getVertexCount();
+    if(selectedPolyline == null) return;
+    var count = selectedPolyline.getVertexCount();
     if(count > 0){
-	polyline.deleteVertex(count-1);
+	selectedPolyline.deleteVertex(count-1);
     }
     showLength();
     if(isDrawing) draw();
 }
 
 function showLength(){
-    if(polyline != null){
-        var len = Math.round(polyline.getLength());
+    if(selectedPolyline != null){
+        var len = Math.round(selectedPolyline.getLength());
     }
     else{
         len = 0;
@@ -193,24 +227,25 @@ function showLength(){
 }
 
 function setLatLng(){
+    if(!marker) addMarker();
     var pt = marker.getLatLng();
     $("#latitude").val(pt.lat());
     $("#longitude").val(pt.lng());
 }
 
 function length(){
-    if(polyline == null){
+    if(selectedPolyline == null){
         return 0;
     }
     else{
-        return Math.round(polyline.getLength());
+        return Math.round(selectedPolyline.getLength());
     }
 }
 
 function getImportPath(frame){
     var pres = frame.contents().find("pre");
     var text = pres.text();
-    showPath(text)
+    eval(text);
 }
 function importFile(){
     var frame = $("#import_frame");

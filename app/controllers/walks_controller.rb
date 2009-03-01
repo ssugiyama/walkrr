@@ -86,20 +86,23 @@ class WalksController < ApplicationController
     headers["Content-Type"] = "text/plain";
     file = params[:file]
     content = file.read
-    case file.original_filename[/\.[^.]+$/]
+    @paths = case file.original_filename[/\.[^.]+$/]
     when ".kml"
-      render :text => import_kml(content)         
+      import_kml(content)         
     when ".xmps"
-      render :text => import_xmps(content)       
+      import_xmps(content)       
     end
   end
 
   private
   
   def import_kml(content)
+
     doc = REXML::Document.new content
-    coords = doc.elements["//LineString/coordinates"].get_text.to_s
-    coords.split(" ").map{|item| item.split(",").join(" ")}.join(",")    
+    doc.elements.collect("//LineString/coordinates") do |elm|
+      elm.text.split(" ").map{|item| item.split(",").join(" ")}.join(",")
+    end
+      
   end   
 
   def coord_to_f(point, unit)
@@ -123,18 +126,19 @@ class WalksController < ApplicationController
 
   def import_xmps(content)
     doc = REXML::Document.new content
-    elm = doc.elements["//polyline/locator/points"]
-    coords = elm.text
-    unit = elm.attributes["unit"]
-    coords = coords.split(",").map{|item| coord_to_f(item, unit)}
-    points = []
-    while coords.length > 0 do
-      lat = coords.shift
-      lng = coords.shift
-      points.push([lng, lat])    
-    end   
+    doc.elements("//polyline/locator/points").collect do |elm|
+      coords = elm.text
+      unit = elm.attributes["unit"]
+      coords = coords.split(",").map{|item| coord_to_f(item, unit)}
+      points = []
+      while coords.length > 0 do
+        lat = coords.shift
+        lng = coords.shift
+        points.push([lng, lat])
+      end
+      transform_path(LineString.from_coordinates(points, 4301), 4326).text_representation
+    end
     
-    transform_path(LineString.from_coordinates(points, 4301), 4326).text_representation
   end
   
 end
