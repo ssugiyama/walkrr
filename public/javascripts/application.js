@@ -16,6 +16,7 @@ $(document).ready(function (){
     map.addMapType(G_PHYSICAL_MAP);
     map.removeMapType(G_HYBRID_MAP);
     map.enableGoogleBar();
+    map.disableDoubleClickZoom();
 //    map.enableScrollWheelZoom();
     map.addControl(new GLargeMapControl());
     map.addControl(new GMenuMapTypeControl());
@@ -24,7 +25,9 @@ $(document).ready(function (){
     var pt = new GLatLng(35.690,139.700);
     map.setCenter(pt, 13);
     addMarker();
-    handler = GEvent.addListener(map, "click", handleClick);
+    GEvent.addListener(map, "click", handleClick);
+    GEvent.addListener(map, "singlerightclick", handleRightClick);
+
     points = new Array();
     $(".pagination a").live('click', function() {
       var el = $(this);
@@ -35,6 +38,15 @@ $(document).ready(function (){
     });
     $("#date").datepicker({ dateFormat: 'yy-mm-dd' });
     $("#tabs").tabs();
+    $("#conditionBox input").change(function (){
+   
+        if($("#condition_neighbor").attr("checked")) $("#neighborBox").show();
+        else $("#neighborBox").hide();
+        if($("#condition_areas").attr("checked")) $("#areasBox").show();
+        else $("#areasBox").hide();
+    }).change();
+
+ 
 });
 
 function addMarker (){
@@ -57,6 +69,17 @@ function deleteAll() {
     marker = null;
     isDrawing = false;
     
+}
+
+function getPoints() {
+    if(selectedPolyline == null) return [];
+    var points = [];
+    var count = selectedPolyline.getVertexCount();
+    for (var i = 0; i < count; i++){
+        var vertex = selectedPolyline.getVertex(i);
+        points.push(vertex)
+    }    
+    return points;
 }
 
 function retrievePointsFromPath(id){
@@ -160,6 +183,7 @@ function setSelectedPolylne(pl){
     showLength();
 }
 
+
 function handleClick(overlay, point){
 //    if(point == null)  return;
     /*
@@ -184,7 +208,28 @@ function handleClick(overlay, point){
         marker.setLatLng(point);
     }
 }
+function handleRightClick(point, src, overlay){
+//    if(point == null)  return;
+    /*
+    if($("edit").checked){
+		if(points.length == 0){
+//			points.push(marker.getLatLng());
+			marker.setLatLng(point);
+		}
+		points.push(point);
+    	redrawPolyline();
+	}
+	else{
+     */
+  
+    
 
+    if(selectedPolyline && overlay && overlay.index != undefined){
+        selectedPolyline.deleteVertex(overlay.index);
+    }
+
+    if(isDrawing) draw();
+}
 function endDraw(){
     isDrawing = false;
  
@@ -201,20 +246,21 @@ function draw() {
 
 }
 
+function recreate() {
+    if(selectedPolyline == null){
+        return;
+    }
+    var points = getPoints();
+    deletePath();
+    addPolyline(points);
+}
+
 function newPath() {
     addPolyline([])
     draw();
 }
 
-function back(){
-    if(selectedPolyline == null) return;
-    var count = selectedPolyline.getVertexCount();
-    if(count > 0){
-	selectedPolyline.deleteVertex(count-1);
-    }
-    showLength();
-    if(isDrawing) draw();
-}
+
 
 function showLength(){
     if(selectedPolyline != null){
