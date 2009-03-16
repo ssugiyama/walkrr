@@ -15,23 +15,23 @@
   <body>
     <div id="top">
       <div id="top_left">
-        <%= button_to_function "new", "newPath();" , {}, {:class => "button"}%>
-        <%= button_to_function "edit", "draw();" , {}, {:class => "button"}%>
-        <%= button_to_function "redraw", "recreate();" , {}, {:class => "button"}%>
-        <%= button_to_function "delete", "deletePath();", {}, {:class => "button"}%>
-        <%= button_to_function "clear", "deleteAll();", {}, {:class => "button"}%>
+        <%= button_to_function "new", "walk.newPath();" , {}, {:class => "button"}%>
+        <%= button_to_function "edit", "walk.draw();" , {}, {:class => "button"}%>
+        <%= button_to_function "redraw", "walk.recreate();" , {}, {:class => "button"}%>
+        <%= button_to_function "delete", "walk.deletePath();", {}, {:class => "button"}%>
+        <%= button_to_function "clear", "walk.deleteAll();", {}, {:class => "button"}%>
         <% form_tag({:action => "import"}, {:id => "import_form", :multipart => true, :target => "import_frame"}) do %>
           <%= file_field_tag "file" %>
-          <%= button_to_function "import", "importFile();", {}, {:class => "button"}%>
+          <%= button_to_function "import", "walk.importFile();", {}, {:class => "button"}%>
         <% end %>
         length:<span id="length">0</span>m
         </div>
         <div id="top_right">
           GSV:
-          <%= button_to_function "&oplus;", "nearestPanorama();" , {}, {:class => "button"}%>
-          <%= button_to_function "&laquo;", "prevPanorama();" , {}, {:class => "button"}%>
-          <%= button_to_function "&raquo;", "nextPanorama();" , {}, {:class => "button"}%>
-          <%= button_to_function "&times;", "hidePanorama();" , {}, {:class => "button"} %>
+          <%= button_to_function "&oplus;", "walk.nearestPanorama();" , {}, {:class => "button"}%>
+          <%= button_to_function "&laquo;", "walk.prevPanorama();" , {}, {:class => "button"}%>
+          <%= button_to_function "&raquo;", "walk.nextPanorama();" , {}, {:class => "button"}%>
+          <%= button_to_function "&times;", "walk.hidePanorama();" , {}, {:class => "button"} %>
         </div>
       
       <iframe id="import_frame" name="import_frame" style="display: none;"></iframe>
@@ -72,7 +72,7 @@
           <div>
             <label for="per_page">per page</label><%= text_field_tag "per_page","20" %>
           </div>
-          <%= button_to_remote "search", {:submit => "search_form", :before => "setLatLng();retrievePointsFromPath('#search_path')", :method => 'get', :url => { :action => "search" }}, {:class => "button"} %>
+          <%= button_to_remote "search", {:submit => "search_form", :before => "walk.setLatLng();walk.retrievePointsFromPath('#search_path')", :method => 'get', :url => { :action => "search" }}, {:class => "button"} %>
         </div>
         <div id="create_form">
           <div><label for="date">date</label>
@@ -89,7 +89,7 @@
           </div>
 
           <%= hidden_field_tag 'create_path'  %>
-          <%= button_to_remote "create", {:submit => "create_form", :before => "retrievePointsFromPath('#create_path');", :url => { :action => "create" }}, {:class => "button"} %>
+          <%= button_to_remote "create", {:submit => "create_form", :before => "walk.retrievePointsFromPath('#create_path');", :url => { :action => "create" }}, {:class => "button"} %>
         </div>
       </div>
  
