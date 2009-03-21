@@ -14,9 +14,14 @@ var Walkrr = function (){
     this.client = new GStreetviewClient();
     var pt = new GLatLng(35.690,139.700);
     map.setCenter(pt, 13);
-    
-    GEvent.addListener(map, "click", this.handleClick);
-    GEvent.addListener(map, "singlerightclick", this.handleRightClick);
+
+    var self = this;
+    GEvent.addListener(map, "click", function (overlay, point){
+        self.handleClick(overlay, point);
+    });
+    GEvent.addListener(map, "singlerightclick", function (point, src, ovelay) {
+        self.handleRightClick(point, src, overlay);
+    });
 
     this.points = new Array();
     $(".pagination a").live('click', function() {
@@ -162,11 +167,17 @@ Walkrr.prototype = {
         var pl = new GPolyline(points);
         this.map.addOverlay(pl);
         this.setSelectedPolylne(pl);
-
+        var self = this;
         this.panoramaIndex = -1;
-        GEvent.addListener(pl, "lineupdated", this.showLength);
-        GEvent.addListener(pl, "endline", this.endDraw);
-        GEvent.addListener(pl, "cancelline", this.endDraw);
+        GEvent.addListener(pl, "lineupdated", function () {
+            self.showLength();
+        });
+        GEvent.addListener(pl, "endline", function (){
+            self.endDraw();
+        });
+        GEvent.addListener(pl, "cancelline", function (){
+            self.endDraw();
+        });
     },
     setSelectedPolylne : function (pl){
         if(this.selectedPolyline){
@@ -177,57 +188,26 @@ Walkrr.prototype = {
         this.showLength();
     },
     handleClick : function (overlay, point){
-    //    if(point == null)  return;
-        /*
-        if($("edit").checked){
-            if(points.length == 0){
-    //			points.push(marker.getLatLng());
-                marker.setLatLng(point);
-            }
-            points.push(point);
-            redrawPolyline();
-        }
-        else{
-         */
+
         if(overlay instanceof GPolyline){
-            walk.setSelectedPolylne(overlay)
+            this.setSelectedPolylne(overlay)
         }
-        else if(walk.isDrawing){
-      //      showLength();
-        }
-        else{
-            if(!walk.marker) walk.addMarker();
-            walk.marker.setLatLng(point);
+        else if(!this.isDrawing){
+            if(!this.marker) this.addMarker();
+            this.marker.setLatLng(point);
         }
     },
     handleRightClick : function (point, src, overlay){
-    //    if(point == null)  return;
-        /*
-        if($("edit").checked){
-            if(points.length == 0){
-    //			points.push(marker.getLatLng());
-                marker.setLatLng(point);
-            }
-            points.push(point);
-            redrawPolyline();
-        }
-        else{
-         */
 
-
-
-        if(walk.selectedPolyline && overlay && overlay.index != undefined){
-            walk.selectedPolyline.deleteVertex(overlay.index);
+        if(this.selectedPolyline && overlay && overlay.index != undefined){
+            this.selectedPolyline.deleteVertex(overlay.index);
         }
 
-        if(walk.isDrawing) walk.draw();
+        if(this.isDrawing) this.draw();
     },
     endDraw : function (){
-        walk.isDrawing = false;
+        this.isDrawing = false;
 
-     //   GEvent.clearListeners(selectedPolyline, "lineupdated");
-    //    GEvent.clearListeners(selectedPolyline, "endline");
-    //    GEvent.clearListeners(selectedPolyline, "cancelline");
     },
     draw : function () {
         if(this.selectedPolyline == null){
@@ -250,12 +230,15 @@ Walkrr.prototype = {
         this.draw();
     },
     showLength : function (){
+
         if(this.selectedPolyline != null){
+
             var len = Math.round(this.selectedPolyline.getLength());
         }
         else{
             len = 0;
         }
+        
         $("#length").text(len);
     },
     setLatLng : function (){
