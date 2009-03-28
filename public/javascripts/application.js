@@ -19,7 +19,7 @@ var Walkrr = function (){
     GEvent.addListener(map, "click", function (overlay, point){
         self.handleClick(overlay, point);
     });
-    GEvent.addListener(map, "singlerightclick", function (point, src, ovelay) {
+    GEvent.addListener(map, "singlerightclick", function (point, src, overlay) {
         self.handleRightClick(point, src, overlay);
     });
 
