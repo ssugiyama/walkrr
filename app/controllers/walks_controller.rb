@@ -17,17 +17,16 @@ class WalksController < ApplicationController
     conditions = 
       case params[:condition]
       when "neighbor"
-        point = Point.from_x_y(longitude, latitude, 4326)
-        ["expand(transform(?, 30168), ?) && transform(path,30168) and distance(transform(path,30168),transform(?, 30168))  <= ?",
-        point, distance.to_f*1000,
-        point, distance.to_f*1000]
+        point = Point.from_x_y(longitude, latitude, DEFAULT_SRID)
+        ["expand(transform(?, ?), ?) && transform(path,?) and distance(transform(path,?),transform(?, ?))  <= ?",
+        point, PROJECTION_SRID, distance.to_f*1000, PROJECTION_SRID, PROJECTION_SRID,
+        point, PROJECTION_SRID, distance.to_f*1000]
       when "areas"
         ["id in (select distinct id from walks inner join areas on jcode in (?) where path && the_geom and intersects(path, the_geom))", params[:areas]]
       when "cross"
         points = params[:search_path].split(",").map{|item| item.split(" ")}
-        path = LineString.from_coordinates(points, 4326)
+        path = LineString.from_coordinates(points, DEFAULT_SRID)
         ["path && ? and intersects(path, ?)", path, path]
-#        ["distance(transform(centroid(path),30168), transform(centroid(?),30168)) <= ?", path, distance.to_f*1000 ]
       else
         nil
       end
@@ -47,7 +46,7 @@ class WalksController < ApplicationController
 
   def create
     points = params[:create_path].split(",").map{|item| item.split(" ")}
-    path = LineString.from_coordinates(points, 4326)
+    path = LineString.from_coordinates(points, DEFAULT_SRID)
     @walk = Walk.new(:date => params[:date], :start => params[:start], :end => params[:end],
                     :path =>path)
     if @walk.save
@@ -70,7 +69,7 @@ class WalksController < ApplicationController
     when "kml"
       headers["Content-Type"] = "application/vnd.google-earth.kml+xml";
       headers["Content-Disposition"] = "attachment; filename=walks.kml";
-      srid = 4326
+      srid = DEFAULT_SRID
       action = "export_kml"
     when "xmps"
       headers["Content-Type"] = "application/x-mapserver-xml";
@@ -136,7 +135,7 @@ class WalksController < ApplicationController
         lng = coords.shift
         points.push([lng, lat])
       end
-      transform_path(LineString.from_coordinates(points, 4301), 4326).text_representation
+      transform_path(LineString.from_coordinates(points, 4301), DEFAULT_SRID).text_representation
     end
     
   end

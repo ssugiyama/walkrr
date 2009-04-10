@@ -59,3 +59,5 @@ end
 # Mime::Type.register "application/x-mobile", :mobile
 
 # Include your application configuration below
+
+require File.join(File.dirname(__FILE__), 'config')
