@@ -1,6 +1,8 @@
 class WalksController < ApplicationController
   include GeoRuby::SimpleFeatures
 
+  XMPS_SRID = 4301
+  
   def index
     @walks = []
     @areas = Area.find(:all, 
@@ -74,7 +76,7 @@ class WalksController < ApplicationController
     when "xmps"
       headers["Content-Type"] = "application/x-mapserver-xml";
       headers["Content-Disposition"] = "attachment; filename=walks.xmps";   
-      srid = 4301
+      srid = XMPS_SRID
       action = "export_xmps"
     end
     @walks.map{|walk| walk.path = transform_path(walk.path, srid)}
@@ -135,7 +137,7 @@ class WalksController < ApplicationController
         lng = coords.shift
         points.push([lng, lat])
       end
-      transform_path(LineString.from_coordinates(points, 4301), DEFAULT_SRID).text_representation
+      transform_path(LineString.from_coordinates(points, XMPS_SRID), DEFAULT_SRID).text_representation
     end
     
   end
