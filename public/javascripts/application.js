@@ -226,8 +226,10 @@ Walkrr.prototype = {
         this.addPolyline(points);
     },
     newPath : function () {
-        this.addPolyline([])
-        this.draw();
+        if(!this.isDrawing){
+            this.addPolyline([])
+            this.draw();
+        }
     },
     showLength : function (){
 
