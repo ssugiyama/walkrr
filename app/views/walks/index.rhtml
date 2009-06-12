@@ -62,6 +62,13 @@
             <%= select_tag "areas", options_for_select(@areas), {:multiple => true, :size =>5, :name => 'areas[]'} %>
           </div>
           <div>
+            <label >date</label>
+            <%= select_tag "year",
+              options_for_select(@year_opts)%> /
+            <%= select_tag "month",
+              options_for_select(@month_opts)%>
+          </div>
+          <div>
             <label for="order">order</label>
             <%= select_tag "order",
               options_for_select([["new first","date desc"], ["old first","date"],

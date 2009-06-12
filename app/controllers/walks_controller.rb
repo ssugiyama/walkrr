@@ -9,29 +9,44 @@ class WalksController < ApplicationController
       :select => "pref||coalesce(city2,'')||coalesce(city1,'') as city, jcode",
       :conditions => "exists (select * from walks where the_geom && path and intersects(the_geom, path))",
       :order => "jcode"
-    ).map{|area| [area.city, area.jcode]} 
+    ).map{|area| [area.city, area.jcode]}
+    year_range = ActiveRecord::Base.connection.select_one("select extract(year from min(date)) as min, extract(year from max(date)) as max from walks")
+    @year_opts = [''] + (year_range['min'].to_i .. year_range['max'].to_i).to_a.reverse
+    @month_opts = [''] + (1 .. 12).to_a
   end
 
   def search
     distance = params[:distance]
     latitude = params[:latitude]
     longitude = params[:longitude]
-    conditions = 
-      case params[:condition]
-      when "neighbor"
-        point = Point.from_x_y(longitude, latitude, DEFAULT_SRID)
-        ["expand(transform(?, ?), ?) && transform(path,?) and distance(transform(path,?),transform(?, ?))  <= ?",
-        point, PROJECTION_SRID, distance.to_f*1000, PROJECTION_SRID, PROJECTION_SRID,
-        point, PROJECTION_SRID, distance.to_f*1000]
-      when "areas"
-        ["id in (select distinct id from walks inner join areas on jcode in (?) where path && the_geom and intersects(path, the_geom))", params[:areas]]
-      when "cross"
-        points = params[:search_path].split(",").map{|item| item.split(" ")}
-        path = LineString.from_coordinates(points, DEFAULT_SRID)
-        ["path && ? and intersects(path, ?)", path, path]
-      else
-        nil
-      end
+    year = params[:year]
+    month = params[:month]
+    sqls = []
+    values = {}
+    unless year.empty?
+      sqls << 'extract(year from date) = :year'
+      values[:year] = year
+    end
+    unless month.empty?
+      sqls << 'extract(month from date) = :month'
+      values[:month] = month
+    end
+    case params[:condition]
+    when "neighbor"
+      point = Point.from_x_y(longitude, latitude, DEFAULT_SRID)
+      sqls << "expand(transform(:point, :srid), :distance) && transform(path, :srid) and distance(transform(path, :srid),transform(:point, :srid))  <= :distance"
+      values.merge!({:point => point, :srid => PROJECTION_SRID, :distance => distance.to_f*1000, :point => point})
+    when "areas"
+      sqls << "id in (select distinct id from walks inner join areas on jcode in (:areas) where path && the_geom and intersects(path, the_geom))"
+      values.merge!({:areas =>params[:areas]})
+    when "cross"
+      points = params[:search_path].split(",").map{|item| item.split(" ")}
+      path = LineString.from_coordinates(points, DEFAULT_SRID)
+      sqls << "path && ? and intersects(path, :path)"
+      values.merge!({:path => path})
+
+    end
+    conditions = [sqls.join(' and '), values]
 
     @items = Walk.paginate :page => params[:page], :select => "walks.*",  :conditions => conditions, :order => params[:order], :per_page => params[:per_page].to_i
     @message = "Hit #{@items.total_entries} item(s)"
