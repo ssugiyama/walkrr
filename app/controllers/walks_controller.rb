@@ -42,7 +42,7 @@ class WalksController < ApplicationController
     when "cross"
       points = params[:search_path].split(",").map{|item| item.split(" ")}
       path = LineString.from_coordinates(points, DEFAULT_SRID)
-      sqls << "path && ? and intersects(path, :path)"
+      sqls << "path && :path and intersects(path, :path)"
       values.merge!({:path => path})
 
     end
