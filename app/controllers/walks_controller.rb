@@ -34,7 +34,7 @@ class WalksController < ApplicationController
     case params[:condition]
     when "neighbor"
       point = Point.from_x_y(longitude, latitude, DEFAULT_SRID)
-      sqls << "expand(transform(:point, :srid), :distance) && transform(path, :srid) and distance(transform(path, :srid),transform(:point, :srid))  <= :distance"
+      sqls << "st_dwithin(transform(path, :srid), transform(:point, :srid), :distance)"
       values.merge!({:point => point, :srid => PROJECTION_SRID, :distance => distance.to_f*1000, :point => point})
     when "areas"
       sqls << "id in (select distinct id from walks inner join areas on jcode in (:areas) where path && the_geom and intersects(path, the_geom))"
