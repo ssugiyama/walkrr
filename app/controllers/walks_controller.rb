@@ -35,7 +35,7 @@ class WalksController < ApplicationController
     when "neighbor"
       point = Point.from_x_y(longitude, latitude, DEFAULT_SRID)
       sqls << "st_dwithin(transform(path, :srid), transform(:point, :srid), :distance)"
-      values.merge!({:point => point, :srid => PROJECTION_SRID, :distance => distance.to_f*1000, :point => point})
+      values.merge!({:srid => PROJECTION_SRID, :distance => distance.to_f*1000, :point => point})
     when "areas"
       sqls << "id in (select distinct id from walks inner join areas on jcode in (:areas) where path && the_geom and intersects(path, the_geom))"
       values.merge!({:areas =>params[:areas]})
@@ -113,7 +113,7 @@ class WalksController < ApplicationController
   private
   
   def import_kml(content)
-
+    puts 'contents:' + content
     doc = REXML::Document.new content
     doc.elements.collect("//LineString/coordinates") do |elm|
       elm.text.split(" ").map{|item| item.split(",").join(" ")}.join(",")

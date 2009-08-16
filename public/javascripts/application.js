@@ -47,6 +47,12 @@ var Walkrr = function (){
     this.selectedStyle = { color : "#ff0000", opacity : 0.5};
     this.panoramaIndex = 0;
     this.addMarker();
+    var frame = $("#import_frame");
+
+    frame.load(function () {
+        self
+        .getImportPath(frame);
+    });
 }
 
 var walk;
@@ -263,11 +269,8 @@ Walkrr.prototype = {
         eval(text);
     },
     importFile : function (){
-        var frame = $("#import_frame");
+
         var form = $("#import_form");
-        frame.load(function () {
-            this.getImportPath(frame);
-        });
 
         form.submit();
     }
