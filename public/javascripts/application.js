@@ -10,7 +10,7 @@ var Walkrr = function (){
 //    map.enableScrollWheelZoom();
     map.addControl(new GLargeMapControl());
     map.addControl(new GMenuMapTypeControl());
-    this.streetView = new GStreetviewPanorama($("#panorama").get(0));
+    this.streetView = new GStreetviewPanorama(jQuery("#panorama").get(0));
     this.client = new GStreetviewClient();
     var pt = new GLatLng(35.690,139.700);
     map.setCenter(pt, 13);
@@ -24,21 +24,21 @@ var Walkrr = function (){
     });
 
     this.points = new Array();
-    $(".pagination a").live('click', function() {
-      var el = $(this);
+    jQuery(".pagination a").live('click', function() {
+      var el = jQuery(this);
 
-      $.get(el.attr('href'), null, null, 'script');
+      jQuery.get(el.attr('href'), null, null, 'script');
       return false;
 
     });
-    $("#date").datepicker({ dateFormat: 'yy-mm-dd' });
-    $("#tabs").tabs();
-    $("#conditionBox input").change(function (){
+    jQuery("#date").datepicker({ dateFormat: 'yy-mm-dd' });
+    jQuery("#tabs").tabs();
+    jQuery("#conditionBox input").change(function (){
 
-        if($("#condition_neighbor").attr("checked")) $("#neighborBox").show();
-        else $("#neighborBox").hide();
-        if($("#condition_areas").attr("checked")) $("#areasBox").show();
-        else $("#areasBox").hide();
+        if(jQuery("#condition_neighbor").attr("checked")) jQuery("#neighborBox").show();
+        else jQuery("#neighborBox").hide();
+        if(jQuery("#condition_areas").attr("checked")) jQuery("#areasBox").show();
+        else jQuery("#areasBox").hide();
     }).change();
     this.map = map;
     this.selectedPolyline = null;
@@ -47,7 +47,7 @@ var Walkrr = function (){
     this.selectedStyle = { color : "#ff0000", opacity : 0.5};
     this.panoramaIndex = 0;
     this.addMarker();
-    var frame = $("#import_frame");
+    var frame = jQuery("#import_frame");
 
     frame.load(function () {
         self
@@ -58,7 +58,7 @@ var Walkrr = function (){
 var walk;
 
 
-$(document).ready(function (){
+jQuery(document).ready(function (){
     //    google.load("maps", "2", {"locale" : "ja_JP"});
     walk = new Walkrr();
 });
@@ -102,7 +102,7 @@ Walkrr.prototype = {
             points.push(vertex.lng() + " " + vertex.lat())
         }
 
-        $(id).val(points.join(","));
+        jQuery(id).val(points.join(","));
     },
     showPath : function (str) {
     //    clearPath();
@@ -123,7 +123,7 @@ Walkrr.prototype = {
         return ret;
     },
     showPanorama : function (pt1, pt2) {
-        $("#panorama").show();
+        jQuery("#panorama").show();
 
         var yaw, pov;
         if(pt2){
@@ -164,7 +164,7 @@ Walkrr.prototype = {
         this.showPanorama(pt1, pt2);
     },
     hidePanorama : function (){
-       $("#panorama").hide();
+       jQuery("#panorama").hide();
     },
     addPolyline : function (points){
     //    if(polyline != null){
@@ -247,13 +247,13 @@ Walkrr.prototype = {
             len = 0;
         }
         
-        $("#length").text(len);
+        jQuery("#length").text(len);
     },
     setLatLng : function (){
         if(!this.marker) this.addMarker();
         var pt = this.marker.getLatLng();
-        $("#latitude").val(pt.lat());
-        $("#longitude").val(pt.lng());
+        jQuery("#latitude").val(pt.lat());
+        jQuery("#longitude").val(pt.lng());
     },
     length : function (){
         if(this.selectedPolyline == null){
@@ -270,7 +270,7 @@ Walkrr.prototype = {
     },
     importFile : function (){
 
-        var form = $("#import_form");
+        var form = jQuery("#import_form");
 
         form.submit();
     }

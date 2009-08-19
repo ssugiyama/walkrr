@@ -27,8 +27,8 @@ and following gems
 ...
 
 3. install plugins
- % ./script/plugin install svn://rubyforge.org/var/svn/georuby/SpatialAdapter/trunk/spatial_adapter
- % ./script/plugin install http://ennerchi.googlecode.com/svn/trunk/plugins/jrails
+ % ./script/plugin install git://github.com/fragility/spatial_adapter.git
+ % ./script/plugin install git://github.com/aaronchi/jrails.git
 
 4. migrate db schemas
  % rake db:migrate

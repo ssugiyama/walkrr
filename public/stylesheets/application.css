@@ -41,11 +41,11 @@ table{
     border-collapse: collapse;
 }
 tr.even{
-	background-color: #0078ae;
+	background-color: #1e4a00;
     color: white;
 }
 tr.odd{
-	background-color: #6eac2c;
+	background-color: #459813;
     color: white;
 }
 
