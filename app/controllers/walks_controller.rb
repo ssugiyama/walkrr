@@ -2,7 +2,9 @@ class WalksController < ApplicationController
   include GeoRuby::SimpleFeatures
 
   XMPS_SRID = 4301
-  
+  EARTH_RADIUS = 6370986
+
+  DEG_TO_RAD = Math::PI/180
   def index
     @walks = []
     @areas = Area.find(:all, 
@@ -34,8 +36,15 @@ class WalksController < ApplicationController
     case params[:condition]
     when "neighbor"
       point = Point.from_x_y(longitude, latitude, DEFAULT_SRID)
-      sqls << "st_dwithin(transform(path, :srid), transform(:point, :srid), :distance)"
-      values.merge!({:srid => PROJECTION_SRID, :distance => distance.to_f*1000, :point => point})
+#      sqls << "st_dwithin(transform(path, :srid), transform(:point, :srid), :distance)"
+      dlat = distance.to_f * 1000 / DEG_TO_RAD / EARTH_RADIUS
+      dlon = dlat / Math.cos(latitude.to_f * DEG_TO_RAD)
+      pll = Point.from_x_y(longitude.to_f-dlon, latitude.to_f-dlat, DEFAULT_SRID)
+      pur = Point.from_x_y(longitude.to_f+dlon, latitude.to_f+dlat, DEFAULT_SRID)
+      sqls << "st_makebox2d(:pll, :pur) && path and st_distance_sphere(path, :point) <= :distance"
+      values.merge!({:distance => distance.to_f*1000, :point => point,
+        :pll => pll, :pur => pur
+      })
     when "areas"
       sqls << "id in (select distinct id from walks inner join areas on jcode in (:areas) where path && the_geom and intersects(path, the_geom))"
       values.merge!({:areas =>params[:areas]})
