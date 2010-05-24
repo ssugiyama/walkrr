@@ -2,28 +2,37 @@
 // This file is automatically included by javascript_include_tag :defaults
 
 var Walkrr = function (){
-    var map = new GMap2(document.getElementById("map"));
-    map.addMapType(G_PHYSICAL_MAP);
-    map.removeMapType(G_HYBRID_MAP);
-    map.enableGoogleBar();
-    map.disableDoubleClickZoom();
+    var defaultPos = new google.maps.LatLng(35.690,139.70);
+    var options = {
+        zoom: 13,
+        center: defaultPos,
+        mapTypeId: google.maps.MapTypeId.ROADMAP,
+        disableDoubleClickZoom: true
+    };
+    var map = new google.maps.Map(document.getElementById("map"), options);
+//    map.addMapType(G_PHYSICAL_MAP);
+//    map.removeMapType(G_HYBRID_MAP);
+//    map.enableGoogleBar();
+//    map.disableDoubleClickZoom();
 //    map.enableScrollWheelZoom();
-    map.addControl(new GLargeMapControl());
-    map.addControl(new GMenuMapTypeControl());
-    this.streetView = new GStreetviewPanorama(jQuery("#panorama").get(0));
-    this.client = new GStreetviewClient();
-    var pt = new GLatLng(35.690,139.700);
-    map.setCenter(pt, 13);
+//    map.addControl(new GLargeMapControl());
+//    map.addControl(new GMenuMapTypeControl());
+
+
 
     var self = this;
-    GEvent.addListener(map, "click", function (overlay, point){
+
+    google.maps.event.addListener(map, 'dblclick', function (event) {
+        self.handleDblclick(event);
+    })
+/*    GEvent.addListener(map, "click", function (overlay, point){
         self.handleClick(overlay, point);
     });
     GEvent.addListener(map, "singlerightclick", function (point, src, overlay) {
         self.handleRightClick(point, src, overlay);
     });
-
-    this.points = new Array();
+*/
+    this.polylines = new Array();
     jQuery(".pagination a").live('click', function() {
       var el = jQuery(this);
 
@@ -31,7 +40,7 @@ var Walkrr = function (){
       return false;
 
     });
-    jQuery("#date").datepicker({ dateFormat: 'yy-mm-dd' });
+    jQuery("#date").datepicker({dateFormat: 'yy-mm-dd'});
     jQuery("#tabs").tabs();
     jQuery("#conditionBox input").change(function (){
 
@@ -40,11 +49,11 @@ var Walkrr = function (){
         if(jQuery("#condition_areas").attr("checked")) jQuery("#areasBox").show();
         else jQuery("#areasBox").hide();
     }).change();
+
     this.map = map;
     this.selectedPolyline = null;
-    this.isDrawing = false;
-    this.generalStyle = { color : "#0000ff"};
-    this.selectedStyle = { color : "#ff0000", opacity : 0.5};
+    this.generalStyle = {strokeColor : "#0000ff", strokeOpacity: 0.5};
+    this.selectedStyle = {strokeColor : "#ff0000", strokeOpacity : 0.7};
     this.panoramaIndex = 0;
     this.addMarker();
     var frame = jQuery("#import_frame");
@@ -59,48 +68,44 @@ var walk;
 
 
 jQuery(document).ready(function (){
-    //    google.load("maps", "2", {"locale" : "ja_JP"});
     walk = new Walkrr();
 });
 
 Walkrr.prototype = {
     addMarker : function  (){
-        this.marker = new GMarker(this.map.getCenter());
-        this.map.addOverlay(this.marker);
+        var markerOpts = {
+            position: this.map.getCenter(),
+            draggable: true
+        };
+        this.marker = new google.maps.Marker(markerOpts)
+        this.marker.setMap(this.map);
     },
     deletePath : function () {
-
         if(this.selectedPolyline != null){
-            this.map.removeOverlay(this.selectedPolyline);
-            this.selectedPolyline = null;
+            this.selectedPolyline.setMap(null);
+            this.setSelectedPolyline(null);
         }
-        this.isDrawing = false;
+        var newPolylines = [];
+        for (var i = 0; i < this.polylines.length; i++) {
+            var pl = this.polylines[i];
+            if(pl.getMap()) newPolylines.push(pl);
+        }        
+        this.polylines = newPolylines;
     },
     deleteAll : function () {
-        this.map.clearOverlays();
-        this.selectedPolyline = null;
-        this.marker = null;
-        this.isDrawing = false;
-
-    },
-    getPoints : function () {
-        if(this.selectedPolyline == null) return [];
-        var points = [];
-        var count = this.selectedPolyline.getVertexCount();
-        for (var i = 0; i < count; i++){
-            var vertex = this.selectedPolyline.getVertex(i);
-            points.push(vertex)
+        for (var i = 0; i < this.polylines.length; i++) {
+            var pl = this.polylines[i];
+            pl.setMap(null);
         }
-        return points;
+        this.polylines = [];
     },
+
     retrievePointsFromPath : function (id){
         if(this.selectedPolyline == null) return;
         var points = [];
-        var count = this.selectedPolyline.getVertexCount();
-        for (var i = 0; i < count; i++){
-            var vertex = this.selectedPolyline.getVertex(i);
-            points.push(vertex.lng() + " " + vertex.lat())
-        }
+        this.selectedPolyline.getPath().forEach(function (elem, index){
+            points.push(elem.lng() + " " + elem.lat());
+        });
 
         jQuery(id).val(points.join(","));
     },
@@ -112,130 +117,85 @@ Walkrr.prototype = {
             var pt = pts[i];
             var ps = pt.split(" ");
             if(ps.length < 2) continue;
-            points.push(new GLatLng(ps[1], ps[0]));
+            points.push(new google.maps.LatLng(ps[1], ps[0]));
         }
         this.addPolyline(points);
-        this.map.panTo(this.selectedPolyline.getBounds().getCenter());
-    },
-    getYaw : function (pt1, pt2){
-        var ret = Math.atan2((pt2.lng() - pt1.lng())*Math.cos(pt1.latRadians()), pt2.lat() - pt1.lat())*180/Math.PI;
-    //    alert("(" + pt1.lng().toString() + "," + pt1.lat().toString()+ ")-(" + pt2.lng().toString() + ","+ pt2.lat().toString() + ")=" + ret);
-        return ret;
-    },
-    showPanorama : function (pt1, pt2) {
-        jQuery("#panorama").show();
-
-        var yaw, pov;
-        if(pt2){
-            yaw = getYaw(pt1, pt2);
-        }
-        pov = yaw?{yaw : yaw}:null;
-        this.client.getNearestPanoramaLatLng(pt1, function (pt){
-            this.streetView.setLocationAndPOV(pt, pov);
-            this.marker.setLatLng(pt);
-            this.map.panTo(pt);
-        });
-
+        this.map.panTo(points[0]);
     },
 
-    nearestPanorama : function (){
-        var pt = this.marker.getLatLng();
-        this.showPanorama(pt);
-    },
-    nextPanorama : function (){
-        var pt1, pt2;
-        if(!this.selectedPolyline) return;
-
-        var count = this.selectedPolyline.getVertexCount();
-        if(this.panoramaIndex+1 >= count) return;
-        this.panoramaIndex++;
-        pt1 = this.selectedPolyline.getVertex(this.panoramaIndex);
-        pt2 = (this.panoramaIndex+1 < count)?this.selectedPolyline.getVertex(this.panoramaIndex+1):null;
-        this.showPanorama(pt1, pt2);
-    },
-    prevPanorama : function (){
-        var pt1, pt2;
-        if(!this.selectedPolyline) return;
-
-        if(this.panoramaIndex <= 0) return;
-        this.panoramaIndex--;
-        pt1 = this.selectedPolyline.getVertex(this.panoramaIndex);
-        pt2 = this.selectedPolyline.getVertex(this.panoramaIndex+1);
-        this.showPanorama(pt1, pt2);
-    },
-    hidePanorama : function (){
-       jQuery("#panorama").hide();
-    },
     addPolyline : function (points){
     //    if(polyline != null){
     //        map.removeOverlay(polyline);
     //    }
-        var pl = new GPolyline(points);
-        this.map.addOverlay(pl);
-        this.setSelectedPolylne(pl);
+        
+        var pl = new google.maps.Polyline(this.generalStyle);
+        pl.setPath(points);
+        pl.setMap(this.map);
+        this.polylines.push(pl);
+//        this.setSelectedPolylne(pl);
         var self = this;
-        this.panoramaIndex = -1;
-        GEvent.addListener(pl, "lineupdated", function () {
-            self.showLength();
+
+        google.maps.event.addListener(pl, 'click', function () {
+            self.setSelectedPolyline(pl);
         });
-        GEvent.addListener(pl, "endline", function (){
-            self.endDraw();
-        });
-        GEvent.addListener(pl, "cancelline", function (){
-            self.endDraw();
-        });
+        return pl;
+
     },
-    setSelectedPolylne : function (pl){
-        if(this.selectedPolyline){
-            this.selectedPolyline.setStrokeStyle(this.generalStyle);
+    setSelectedPolyline : function (pl){
+        var self = this;
+        if (this.selectedPolyline == null && pl != null){
+            this.addPointListener = google.maps.event.addListener(this.map, 'click', function (event){
+                var path = self.selectedPolyline.getPath();
+                path.push(event.latLng);
+                self.marker.setPosition(event.latLng);
+            });
+            this.deletePointListener = google.maps.event.addListener(this.marker, 'rightclick', function () {
+                var path = self.selectedPolyline.getPath();
+                var len = path.getLength();
+                if(len > 0) {
+                    path.pop();
+                    if (len > 1) self.marker.setPosition(path.getAt(len-2));
+                }
+            });
+            this.endEditListener = google.maps.event.addListener(this.marker, 'click', function () {
+                self.setSelectedPolyline(null);
+            });
+            this.dragPointListener = google.maps.event.addListener(this.marker, 'drag', function (event) {
+                var path = self.selectedPolyline.getPath();
+                var len = path.getLength();
+                if(len > 0) {
+                    path.pop();
+                    path.push(event.latLng);
+                }
+            });
+        }
+        else if (this.selectedPolyline != null && pl == null) {
+            google.maps.event.removeListener(this.addPointListener);
+            google.maps.event.removeListener(this.deletePointListener);
+            google.maps.event.removeListener(this.dragPointListener);
+            google.maps.event.removeListener(this.endEditListener);
+        }
+        if (this.selectedPolyline){
+            this.selectedPolyline.setOptions(this.generalStyle);
         }
         this.selectedPolyline = pl;
-        this.selectedPolyline.setStrokeStyle(this.selectedStyle);
-        this.showLength();
-    },
-    handleClick : function (overlay, point){
-
-        if(overlay instanceof GPolyline){
-            this.setSelectedPolylne(overlay)
+        if (this.selectedPolyline) {
+            this.selectedPolyline.setOptions(this.selectedStyle);
+            var path = this.selectedPolyline.getPath();
+            var len = path.getLength();
+            if(len > 0) this.marker.setPosition(path.getAt(len-1));
         }
-        else if(!this.isDrawing){
-            if(!this.marker) this.addMarker();
-            this.marker.setLatLng(point);
-        }
+ //       this.showLength();
     },
-    handleRightClick : function (point, src, overlay){
+    handleDblclick : function (event){      
+        if(!this.marker) this.addMarker();
+        this.marker.setPosition(event.latLng);
+    },
 
-        if(this.selectedPolyline && overlay && overlay.index != undefined){
-            this.selectedPolyline.deleteVertex(overlay.index);
-        }
-
-        if(this.isDrawing) this.draw();
-    },
-    endDraw : function (){
-        this.isDrawing = false;
-
-    },
-    draw : function () {
-        if(this.selectedPolyline == null){
-            return;
-        }
-        this.isDrawing = true;
-        this.selectedPolyline.enableDrawing();
-
-    },
-    recreate : function () {
-        if(this.selectedPolyline == null){
-            return;
-        }
-        var points = this.getPoints();
-        this.deletePath();
-        this.addPolyline(points);
-    },
     newPath : function () {
-        if(!this.isDrawing){
-            this.addPolyline([])
-            this.draw();
-        }
+        var pl = this.addPolyline([]);
+        this.setSelectedPolyline(pl);
+        
     },
     showLength : function (){
 
@@ -251,7 +211,7 @@ Walkrr.prototype = {
     },
     setLatLng : function (){
         if(!this.marker) this.addMarker();
-        var pt = this.marker.getLatLng();
+        var pt = this.marker.getPosition();
         jQuery("#latitude").val(pt.lat());
         jQuery("#longitude").val(pt.lng());
     },
@@ -277,5 +237,5 @@ Walkrr.prototype = {
 }
 
 
-GEvent.addDomListener(window, "unload", GUnload);
+
 
