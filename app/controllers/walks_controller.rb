@@ -18,7 +18,7 @@ class WalksController < ApplicationController
   end
 
   def search
-    distance = params[:distance]
+    radius = params[:radius]
     latitude = params[:latitude]
     longitude = params[:longitude]
     year = params[:year]
@@ -37,12 +37,12 @@ class WalksController < ApplicationController
     when "neighbor"
       point = Point.from_x_y(longitude, latitude, DEFAULT_SRID)
 #      sqls << "st_dwithin(transform(path, :srid), transform(:point, :srid), :distance)"
-      dlat = distance.to_f * 1000 / DEG_TO_RAD / EARTH_RADIUS
+      dlat = radius.to_f / DEG_TO_RAD / EARTH_RADIUS
       dlon = dlat / Math.cos(latitude.to_f * DEG_TO_RAD)
       pll = Point.from_x_y(longitude.to_f-dlon, latitude.to_f-dlat, DEFAULT_SRID)
       pur = Point.from_x_y(longitude.to_f+dlon, latitude.to_f+dlat, DEFAULT_SRID)
-      sqls << "st_makebox2d(:pll, :pur) && path and st_distance_sphere(path, :point) <= :distance"
-      values.merge!({:distance => distance.to_f*1000, :point => point,
+      sqls << "st_makebox2d(:pll, :pur) && path and st_distance_sphere(path, :point) <= :radius"
+      values.merge!({:radius => radius.to_f, :point => point,
         :pll => pll, :pur => pur
       })
     when "areas"

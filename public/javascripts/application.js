@@ -33,6 +33,44 @@ var Walkrr = function (){
     });
 */
     this.polylines = new Array();
+
+
+    this.map = map;
+    this.selectedPolyline = null;
+    this.generalStyle = {strokeColor : "#0000ff", strokeOpacity: 0.5};
+    this.selectedStyle = {strokeColor : "#ff0000", strokeOpacity : 0.7};
+    this.circle = new google.maps.Circle({radius: 500,  draggable: true});
+    var markerOpts = {
+        position: this.map.getCenter(),
+        draggable: true
+    };
+    this.marker = new google.maps.Marker(markerOpts);
+    
+    this.deletePointListener = google.maps.event.addListener(this.marker, 'rightclick', function () {
+        var path = self.selectedPolyline.getPath();
+        var len = path.getLength();
+        if(len > 0) {
+            path.pop();
+            if (len > 1){
+                self.marker.setMap(self.map);
+                self.marker.setPosition(path.getAt(len-2));
+            }
+            else {
+                self.marker.setMap(null);
+            }
+        }
+    });
+    this.endEditListener = google.maps.event.addListener(this.marker, 'click', function () {
+        self.setSelectedPolyline(null);
+    });
+    this.dragPointListener = google.maps.event.addListener(this.marker, 'drag', function (event) {
+        var path = self.selectedPolyline.getPath();
+        var len = path.getLength();
+        if(len > 0) {
+            path.pop();
+            path.push(event.latLng);
+        }
+    });
     jQuery(".pagination a").live('click', function() {
       var el = jQuery(this);
 
@@ -44,18 +82,20 @@ var Walkrr = function (){
     jQuery("#tabs").tabs();
     jQuery("#conditionBox input").change(function (){
 
-        if(jQuery("#condition_neighbor").attr("checked")) jQuery("#neighborBox").show();
-        else jQuery("#neighborBox").hide();
+        if(jQuery("#condition_neighbor").attr("checked")){
+            jQuery("#neighborBox").show();
+            self.circle.setMap(self.map);
+        }
+        else {
+          jQuery("#neighborBox").hide();
+          self.circle.setMap(null);
+        }
         if(jQuery("#condition_areas").attr("checked")) jQuery("#areasBox").show();
         else jQuery("#areasBox").hide();
     }).change();
-
-    this.map = map;
-    this.selectedPolyline = null;
-    this.generalStyle = {strokeColor : "#0000ff", strokeOpacity: 0.5};
-    this.selectedStyle = {strokeColor : "#ff0000", strokeOpacity : 0.7};
-    this.panoramaIndex = 0;
-    this.addMarker();
+    jQuery("#radius").change(function (){
+        self.circle.setRadius(parseFloat($(this).val()));
+    });
     var frame = jQuery("#import_frame");
 
     frame.load(function () {
@@ -72,14 +112,7 @@ jQuery(document).ready(function (){
 });
 
 Walkrr.prototype = {
-    addMarker : function  (){
-        var markerOpts = {
-            position: this.map.getCenter(),
-            draggable: true
-        };
-        this.marker = new google.maps.Marker(markerOpts)
-        this.marker.setMap(this.map);
-    },
+
     deletePath : function () {
         if(this.selectedPolyline != null){
             this.selectedPolyline.setMap(null);
@@ -147,33 +180,13 @@ Walkrr.prototype = {
             this.addPointListener = google.maps.event.addListener(this.map, 'click', function (event){
                 var path = self.selectedPolyline.getPath();
                 path.push(event.latLng);
+                self.marker.setMap(self.map);
                 self.marker.setPosition(event.latLng);
             });
-            this.deletePointListener = google.maps.event.addListener(this.marker, 'rightclick', function () {
-                var path = self.selectedPolyline.getPath();
-                var len = path.getLength();
-                if(len > 0) {
-                    path.pop();
-                    if (len > 1) self.marker.setPosition(path.getAt(len-2));
-                }
-            });
-            this.endEditListener = google.maps.event.addListener(this.marker, 'click', function () {
-                self.setSelectedPolyline(null);
-            });
-            this.dragPointListener = google.maps.event.addListener(this.marker, 'drag', function (event) {
-                var path = self.selectedPolyline.getPath();
-                var len = path.getLength();
-                if(len > 0) {
-                    path.pop();
-                    path.push(event.latLng);
-                }
-            });
+
         }
         else if (this.selectedPolyline != null && pl == null) {
             google.maps.event.removeListener(this.addPointListener);
-            google.maps.event.removeListener(this.deletePointListener);
-            google.maps.event.removeListener(this.dragPointListener);
-            google.maps.event.removeListener(this.endEditListener);
         }
         if (this.selectedPolyline){
             this.selectedPolyline.setOptions(this.generalStyle);
@@ -183,13 +196,23 @@ Walkrr.prototype = {
             this.selectedPolyline.setOptions(this.selectedStyle);
             var path = this.selectedPolyline.getPath();
             var len = path.getLength();
-            if(len > 0) this.marker.setPosition(path.getAt(len-1));
+            if(len > 0) {
+                this.marker.setMap(this.map);
+                this.marker.setPosition(path.getAt(len-1));
+            }
+            else{
+                this.marker.setMap(null);
+            }
+        }
+        else{
+            this.marker.setMap(null);
         }
  //       this.showLength();
     },
     handleDblclick : function (event){      
-        if(!this.marker) this.addMarker();
-        this.marker.setPosition(event.latLng);
+//        if(!this.marker) this.addMarker();
+//        this.marker.setPosition(event.latLng);
+        this.circle.setCenter(event.latLng);
     },
 
     newPath : function () {
@@ -210,8 +233,7 @@ Walkrr.prototype = {
         jQuery("#length").text(len);
     },
     setLatLng : function (){
-        if(!this.marker) this.addMarker();
-        var pt = this.marker.getPosition();
+        var pt = this.circle.getCenter();
         jQuery("#latitude").val(pt.lat());
         jQuery("#longitude").val(pt.lng());
     },
