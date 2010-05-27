@@ -3,7 +3,7 @@ class WalksController < ApplicationController
 
   XMPS_SRID = 4301
   EARTH_RADIUS = 6370986
-
+  DEFAULT_SRID = 4326
   DEG_TO_RAD = Math::PI/180
   def index
     @walks = []

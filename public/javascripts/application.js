@@ -3,6 +3,7 @@
 
 var Walkrr = function (){
     var defaultPos = new google.maps.LatLng(35.690,139.70);
+    var defaultRadius = 500;
     var options = {
         zoom: 13,
         center: defaultPos,
@@ -10,67 +11,49 @@ var Walkrr = function (){
         disableDoubleClickZoom: true
     };
     var map = new google.maps.Map(document.getElementById("map"), options);
-//    map.addMapType(G_PHYSICAL_MAP);
-//    map.removeMapType(G_HYBRID_MAP);
-//    map.enableGoogleBar();
-//    map.disableDoubleClickZoom();
-//    map.enableScrollWheelZoom();
-//    map.addControl(new GLargeMapControl());
-//    map.addControl(new GMenuMapTypeControl());
-
-
-
     var self = this;
 
-    google.maps.event.addListener(map, 'dblclick', function (event) {
-        self.handleDblclick(event);
-    })
-/*    GEvent.addListener(map, "click", function (overlay, point){
-        self.handleClick(overlay, point);
-    });
-    GEvent.addListener(map, "singlerightclick", function (point, src, overlay) {
-        self.handleRightClick(point, src, overlay);
-    });
-*/
     this.polylines = new Array();
-
+    this.earthRadius = 6370986;
 
     this.map = map;
     this.selectedPolyline = null;
     this.generalStyle = {strokeColor : "#0000ff", strokeOpacity: 0.5};
     this.selectedStyle = {strokeColor : "#ff0000", strokeOpacity : 0.7};
-    this.circle = new google.maps.Circle({radius: 500,  draggable: true});
+    var circleOpts ={
+      center : defaultPos,
+      radius : defaultRadius
+    };
+    this.circle = new google.maps.Circle(circleOpts);
     var markerOpts = {
-        position: this.map.getCenter(),
-        draggable: true
+        position: defaultPos,
+        draggable: true,
+        map: this.map
     };
     this.marker = new google.maps.Marker(markerOpts);
     
-    this.deletePointListener = google.maps.event.addListener(this.marker, 'rightclick', function () {
-        var path = self.selectedPolyline.getPath();
-        var len = path.getLength();
-        if(len > 0) {
-            path.pop();
-            if (len > 1){
-                self.marker.setMap(self.map);
-                self.marker.setPosition(path.getAt(len-2));
-            }
-            else {
-                self.marker.setMap(null);
-            }
-        }
+    google.maps.event.addListener(this.marker, 'rightclick', function () {
+        self.deletePoint();
     });
     this.endEditListener = google.maps.event.addListener(this.marker, 'click', function () {
         self.setSelectedPolyline(null);
     });
-    this.dragPointListener = google.maps.event.addListener(this.marker, 'drag', function (event) {
-        var path = self.selectedPolyline.getPath();
-        var len = path.getLength();
-        if(len > 0) {
-            path.pop();
-            path.push(event.latLng);
-        }
+    google.maps.event.addListener(this.marker, 'dragstart', function (event) {
+        self.addPoint(event);
     });
+    google.maps.event.addListener(this.marker, 'drag', function (event) {
+        self.movePoint(event);
+    });
+    google.maps.event.addListener(this.marker, 'dragend', function () {
+        self.showLength();
+    });
+    google.maps.event.addListener(this.map, 'dblclick' , function (event) {
+       self.marker.setPosition(event.latLng);
+       self.addPoint(event);
+       self.movePoint(event);
+       self.showLength();
+    });
+    jQuery("#editing_label").hide();
     jQuery(".pagination a").live('click', function() {
       var el = jQuery(this);
 
@@ -85,6 +68,7 @@ var Walkrr = function (){
         if(jQuery("#condition_neighbor").attr("checked")){
             jQuery("#neighborBox").show();
             self.circle.setMap(self.map);
+            self.circle.setCenter(self.marker.getPosition());
         }
         else {
           jQuery("#neighborBox").hide();
@@ -93,6 +77,7 @@ var Walkrr = function (){
         if(jQuery("#condition_areas").attr("checked")) jQuery("#areasBox").show();
         else jQuery("#areasBox").hide();
     }).change();
+    jQuery("#radius").val(String(defaultRadius));
     jQuery("#radius").change(function (){
         self.circle.setRadius(parseFloat($(this).val()));
     });
@@ -175,56 +160,64 @@ Walkrr.prototype = {
 
     },
     setSelectedPolyline : function (pl){
-        var self = this;
-        if (this.selectedPolyline == null && pl != null){
-            this.addPointListener = google.maps.event.addListener(this.map, 'click', function (event){
-                var path = self.selectedPolyline.getPath();
-                path.push(event.latLng);
-                self.marker.setMap(self.map);
-                self.marker.setPosition(event.latLng);
-            });
-
-        }
-        else if (this.selectedPolyline != null && pl == null) {
-            google.maps.event.removeListener(this.addPointListener);
-        }
+    
         if (this.selectedPolyline){
             this.selectedPolyline.setOptions(this.generalStyle);
         }
         this.selectedPolyline = pl;
         if (this.selectedPolyline) {
+            jQuery("#editing_label").show();
             this.selectedPolyline.setOptions(this.selectedStyle);
             var path = this.selectedPolyline.getPath();
+
             var len = path.getLength();
             if(len > 0) {
-                this.marker.setMap(this.map);
                 this.marker.setPosition(path.getAt(len-1));
             }
-            else{
-                this.marker.setMap(null);
-            }
+            this.showLength();
         }
         else{
-            this.marker.setMap(null);
+            jQuery("#editing_label").hide();
         }
- //       this.showLength();
-    },
-    handleDblclick : function (event){      
-//        if(!this.marker) this.addMarker();
-//        this.marker.setPosition(event.latLng);
-        this.circle.setCenter(event.latLng);
+      
     },
 
     newPath : function () {
-        var pl = this.addPolyline([]);
+        var position = this.marker.getPosition();
+        var pl = this.addPolyline([position]);
         this.setSelectedPolyline(pl);
+    },
+    addPoint : function (event) {
+        if (! this.selectedPolyline) return;
+        var path = this.selectedPolyline.getPath();
+        path.push(event.latLng);
+    },
+    movePoint : function (event) {
         
+        if (this.selectedPolyline) {
+            var path = this.selectedPolyline.getPath();
+            path.pop();
+            path.push(event.latLng);
+        }
+        else if(this.circle.getMap()){
+            this.circle.setCenter(event.latLng);
+        }
+    },
+    deletePoint : function () {
+        if (! this.selectedPolyline) return;
+        var path = this.selectedPolyline.getPath();
+        var len = path.getLength();
+        if(len > 1) {
+            path.pop();
+            this.marker.setPosition(path.getAt(len-2));
+        }
+        this.showLength();
     },
     showLength : function (){
-
+        var len;
         if(this.selectedPolyline != null){
 
-            var len = Math.round(this.selectedPolyline.getLength());
+            len = Math.round(this.length(this.selectedPolyline.getPath()));
         }
         else{
             len = 0;
@@ -237,13 +230,19 @@ Walkrr.prototype = {
         jQuery("#latitude").val(pt.lat());
         jQuery("#longitude").val(pt.lng());
     },
-    length : function (){
-        if(this.selectedPolyline == null){
-            return 0;
+    length : function (path){
+        var len = path.getLength();
+        var sum = 0;
+        var d2r = Math.PI/180;
+        for (var i = 1; i < len; i++){
+            var p0 = path.getAt(i-1);
+            var p1 = path.getAt(i);
+            var x = (p0.lng()-p1.lng())*d2r*Math.cos((p0.lat()+p1.lat())/2*d2r);
+            var y = (p0.lat()-p1.lat())*d2r;
+            sum += Math.sqrt(x*x + y*y)*this.earthRadius;
+
         }
-        else{
-            return Math.round(this.selectedPolyline.getLength());
-        }
+        return sum;
     },
     getImportPath : function (frame){
         var pres = frame.contents().find("pre");

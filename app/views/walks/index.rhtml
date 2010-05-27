@@ -24,7 +24,7 @@
           <%= file_field_tag "file" %>
           <%= button_to_function "import", "walk.importFile();", {}, {:class => "button"}%>
         <% end %>
-        <%# length:<span id="length">0</span>m %>
+        <span id="editing_label">Now editing...<span id="length">0</span>m</span>
         </div>
       
       <iframe id="import_frame" name="import_frame" style="display: none;"></iframe>
@@ -48,7 +48,7 @@
             <%= radio_button_tag :condition, "all", "checked"%><label for="condition_all">all</label>
           </div>
           <div id="neighborBox">
-            <label for="radius">radius</label><%= text_field_tag "radius","500" %>
+            <label for="radius">radius</label><%= text_field_tag "radius" %>
           </div>
           <div id="areasBox">
             <label for="areas">areas</label>
