@@ -67,7 +67,11 @@ class WalksController < ApplicationController
 
 
   def show
-    @walk = Walk.find(params[:id])
+    ids = params[:id]
+    unless ids.is_a? Array
+      ids = [ids]
+    end
+    @walks = Walk.find(ids)
   end
 
   def create
@@ -91,18 +95,11 @@ class WalksController < ApplicationController
   
   def export_file
     @walks = Walk.find(params[:id])
-    case params[:type]
-    when "kml"
-      headers["Content-Type"] = "application/vnd.google-earth.kml+xml";
-      headers["Content-Disposition"] = "attachment; filename=walks.kml";
-      srid = DEFAULT_SRID
-      action = "export_kml"
-    when "xmps"
-      headers["Content-Type"] = "application/x-mapserver-xml";
-      headers["Content-Disposition"] = "attachment; filename=walks.xmps";   
-      srid = XMPS_SRID
-      action = "export_xmps"
-    end
+    headers["Content-Type"] = "application/vnd.google-earth.kml+xml";
+    headers["Content-Disposition"] = "attachment; filename=walks.kml";
+    srid = DEFAULT_SRID
+    action = "export_kml"
+
     @walks.map{|walk| walk.path = transform_path(walk.path, srid)}
     render :action => action 
   end

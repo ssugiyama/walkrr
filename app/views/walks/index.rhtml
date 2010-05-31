@@ -96,10 +96,11 @@
       <div id="message"></div>
       <% form_tag({:action => "export_file"}, {:id => "export_form"}) do %>
         <div>
+          <%= button_to_function "check all", "$('input[name=id[]]').attr('checked', true);", {}, {:class => "button"}%>
+          <%= button_to_function "reset", "$('input[name=id[]]').attr('checked', false);", {}, {:class => "button"}%>
+          <%= button_to_remote "show", {:submit => "tbody", :url => { :action => "show" }}, {:class => "button"} %>
+          <%= button_to_function "export", "$('#export_form').submit();", {}, {:class => "button"}%>
           <%= button_to_remote "delete", {:submit => "tbody", :url => { :action => "destroy" }}, {:class => "button"} %>
-          <%= select_tag "type", 
-            options_for_select([["kml","kml"], ["xmps","xmps"]]) %>
-          <%= button_to_function "export", "$('#export_form').submit();", {}, {:class => "button"}%>  
         </div>
             
         <table>

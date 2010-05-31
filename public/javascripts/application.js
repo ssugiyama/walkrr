@@ -131,14 +131,18 @@ Walkrr.prototype = {
     //    clearPath();
         var pts = str.split(",");
         var points = [];
+        var bounds = this.map.getBounds();
+        var needsPan = true;
         for(var i = 0; i < pts.length; i++){
             var pt = pts[i];
             var ps = pt.split(" ");
             if(ps.length < 2) continue;
-            points.push(new google.maps.LatLng(ps[1], ps[0]));
+            var point = new google.maps.LatLng(ps[1], ps[0]);
+            points.push(point);
+            if(needsPan && bounds.contains(point)) needsPan = false;
         }
         this.addPolyline(points);
-        this.map.panTo(points[0]);
+        if (needsPan) this.map.panTo(points[0]);
     },
 
     addPolyline : function (points){
