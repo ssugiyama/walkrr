@@ -1,7 +1,10 @@
 // Place your application-specific JavaScript functions and classes here
 // This file is automatically included by javascript_include_tag :defaults
 
+google.load("visualization", "1", {packages:["corechart"]});
 var Walkrr = function (){
+
+    
     var defaultPos = new google.maps.LatLng(35.690,139.70);
     var defaultRadius = 500;
     var options = {
@@ -11,6 +14,11 @@ var Walkrr = function (){
         disableDoubleClickZoom: true,
         scaleControl: true
     };
+    
+    jQuery('#close_button').click(function (){
+        jQuery('#elevation_chart_box').hide();
+    }).click();
+
     var map = new google.maps.Map(document.getElementById("map"), options);
     var self = this;
 
@@ -25,6 +33,20 @@ var Walkrr = function (){
         activeSizerIcon: new google.maps.MarkerImage('./images/resize.png')
     });
     this.pathEditor = new PathEditor({map: map});
+
+    this.elevator = new google.maps.ElevationService();
+    this.elevationMarker = new google.maps.Marker({icon : 'http://maps.google.co.jp/mapfiles/ms/icons/plane.png'});
+
+    this.chart = new google.visualization.AreaChart(document.getElementById('elevation_chart'));
+    google.visualization.events.addListener(this.chart, 'onmouseover', function (e){
+        var point = self.pathEditor.getElevationPoint(e.row / 256.0);
+        self.elevationMarker.setMap(self.map);
+        self.elevationMarker.setPosition(point);
+        self.map.setCenter(point);
+    });
+    google.visualization.events.addListener(this.chart, 'onmouseout', function (){
+        self.elevationMarker.setMap(null);
+    });
     google.maps.event.addListener(this.pathEditor, 'selection_changed', function () {
         if (this.selection)  jQuery("#editing_label").show();
         else jQuery("#editing_label").hide();
@@ -100,6 +122,65 @@ Walkrr.prototype = {
         else{
             alert('Select an import file.')
 
+        }
+    },
+
+    requestElevation : function (){
+        var path = [];
+        this.pathEditor.selection.getPath().forEach(function (elem,i){
+           path.push(elem);
+        });
+        
+        var pathRequest = {
+            'path': path,
+            'samples': 256
+        }
+        var self = this;
+  // Initiate the path request.
+        if (this.elevator) {
+            this.elevator.getElevationAlongPath(pathRequest, function (results, status) {
+                self.plotElevation(results, status);
+            });
+        }
+
+
+    },
+
+    plotElevation : function (results, status) {
+        if (status == google.maps.ElevationStatus.OK) {
+            var elevations = results;
+            //  this.infoWindow.open(this.map);
+            //  this.infoWindow.setPosition(this.map.getCenter());
+            // Extract the elevation samples from the returned results
+            // and store them in an array of LatLngs.
+            var elevationPath = [];
+            for (var i = 0; i < results.length; i++) {
+                elevationPath.push(elevations[i].location);
+            }
+            
+
+            // Extract the data from which to populate the chart.
+            // Because the samples are equidistant, the 'Sample'
+            // column here does double duty as distance along the
+            // X axis.
+            var data = new google.visualization.DataTable();
+            data.addColumn('string', 'Sample');
+            data.addColumn('number', 'Elevation');
+            for (var i = 0; i < results.length; i++) {
+                data.addRow(['', elevations[i].elevation]);
+            }
+
+            // Draw the chart using the data within its DIV.
+            jQuery('#elevation_chart_box').show();
+   
+            this.chart.draw(data, {
+                legend: 'none',
+                titleY: 'Elevation (m)',
+                pointSize : 0,
+                colors : ['#ff0000']
+
+            });
+            
         }
     }
 }
