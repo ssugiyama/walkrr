@@ -92,7 +92,7 @@
           </div>
 
           <%= hidden_field_tag 'create_path'  %>
-          <%= button_to_remote "create", {:submit => "create_form", :before => "walk.retrievePointsFromPath('#create_path');", :url => { :action => "create" }}, {:class => "button"} %>
+          <%= button_to_remote "create", {:submit => "create_form", :before => "walk.preCreate();", :url => { :action => "create" }}, {:class => "button"} %>
         </div>
       </div>
  
@@ -115,10 +115,9 @@
       <div id="pagination"></div>
     </div>
     <div id="map"></div>
-    <div id="elevation_chart_box">
-      <div id="elevation_chart"></div>
-      <div id="close_button"></div>
-    </div>
+   
+    <div id="elevation_chart"></div>
+
         
         
   </body>

@@ -81,7 +81,7 @@ PathEditor.prototype.getSelectionAsString = function (){
     return points.join(",");
 }
 
-PathEditor.prototype.showPath = function (str) {
+PathEditor.prototype.showPath = function (str, select) {
 //    clearPath();
     var pts = str.split(",");
     var points = [];
@@ -95,8 +95,9 @@ PathEditor.prototype.showPath = function (str) {
         points.push(point);
         if(needsPan && bounds.contains(point)) needsPan = false;
     }
-    this.addPolyline(points);
+    var pl = this.addPolyline(points);
     if (needsPan) this.map.panTo(points[0]);
+    if(select) this.set('selection', pl);
 }
 
 PathEditor.prototype.addPolyline = function (points){
@@ -193,29 +194,4 @@ PathEditor.prototype.getSelectionLength = function (){
         }
     }
     return sum;
-}
-
-
-PathEditor.prototype.getElevationPoint = function (rate){
-
-    var sum = 0;
-    var d2r = Math.PI/180;
-    var targetLength = this.getSelectionLength() * rate;
-    if(this.selection) {
-        var path = this.selection.getPath();
-        var len = path.getLength();
-        for (var i = 1; i < len; i++){
-            var p0 = path.getAt(i-1);
-            var p1 = path.getAt(i);
-            var x = (p0.lng()-p1.lng())*d2r*Math.cos((p0.lat()+p1.lat())/2*d2r);
-            var y = (p0.lat()-p1.lat())*d2r;
-            var sum0 = sum;
-            sum += Math.sqrt(x*x + y*y)*this.earthRadius;
-            if (sum >= targetLength) {
-                var r = (targetLength - sum0)/(sum - sum0);
-                return new google.maps.LatLng(p0.lat() + (p1.lat()-p0.lat())*r, p0.lng() + (p1.lng()-p0.lng())*r);
-            }
-        }
-    }
-    return null;
 }

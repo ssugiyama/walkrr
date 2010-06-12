@@ -68,6 +68,7 @@ class WalksController < ApplicationController
 
   def show
     ids = params[:id]
+    @select = params[:select]
     unless ids.is_a? Array
       ids = [ids]
     end

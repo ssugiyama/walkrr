@@ -5,7 +5,7 @@
     <td><%= walk_row.date %></td>
   <%- else %>
     <td><input type='checkbox' name='id[]' value='<%= walk_row.id %>' /></td>
-    <td><%= link_to_remote(walk_row.date, :url => { :action => "show", :id => walk_row.id }) %></td>
+    <td><%= link_to_remote(walk_row.date, :url => { :action => "show", :id => walk_row.id, :select => 1 }) %></td>
   <%- end %>
   <td><%= walk_row.start %></td><td><%= walk_row.end %></td><td style='text-align: right;'><%= "%.1f" % walk_row.length %></td>
 </tr>

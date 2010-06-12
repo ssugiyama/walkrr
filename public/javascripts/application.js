@@ -15,9 +15,7 @@ var Walkrr = function (){
         scaleControl: true
     };
     
-    jQuery('#close_button').click(function (){
-        jQuery('#elevation_chart_box').hide();
-    }).click();
+    jQuery('#elevation_chart').dialog({width: 600, heght: 250, autoOpen: false, title: 'Elevation Chat'});
 
     var map = new google.maps.Map(document.getElementById("map"), options);
     var self = this;
@@ -35,11 +33,11 @@ var Walkrr = function (){
     this.pathEditor = new PathEditor({map: map});
 
     this.elevator = new google.maps.ElevationService();
-    this.elevationMarker = new google.maps.Marker({icon : 'http://maps.google.co.jp/mapfiles/ms/icons/plane.png'});
+    this.elevationMarker = new google.maps.Marker({icon : 'http://maps.google.co.jp/mapfiles/ms/icons/yellow.png'});
 
     this.chart = new google.visualization.AreaChart(document.getElementById('elevation_chart'));
     google.visualization.events.addListener(this.chart, 'onmouseover', function (e){
-        var point = self.pathEditor.getElevationPoint(e.row / 256.0);
+        var point = self.elevationPath[e.row];
         self.elevationMarker.setMap(self.map);
         self.elevationMarker.setPosition(point);
         self.map.setCenter(point);
@@ -48,8 +46,16 @@ var Walkrr = function (){
         self.elevationMarker.setMap(null);
     });
     google.maps.event.addListener(this.pathEditor, 'selection_changed', function () {
-        if (this.selection)  jQuery("#editing_label").show();
-        else jQuery("#editing_label").hide();
+        if (this.selection){
+            jQuery("#editing_label").show();
+            if(jQuery('#elevation_chart').dialog('isOpen')){
+                self.requestElevation();
+            }
+        }
+        else {
+            jQuery("#editing_label").hide();
+            jQuery('#elevation_chart').dialog('close');
+        }
     });
     google.maps.event.addListener(this.pathEditor, 'length_changed', function () {
         jQuery("#length").text(Math.round(this.length));
@@ -107,7 +113,9 @@ Walkrr.prototype = {
             jQuery("#search_path").val(this.pathEditor.getSelectionAsString());
         }
     },
-
+    preCreate : function () {
+        jQuery('#create_path').val(this.pathEditor.getSelectionAsString());
+    },
     getImportPath : function (frame){
         var pres = frame.contents().find("pre");
         var text = pres.text();
@@ -157,7 +165,7 @@ Walkrr.prototype = {
             for (var i = 0; i < results.length; i++) {
                 elevationPath.push(elevations[i].location);
             }
-            
+            this.elevationPath = elevationPath;
 
             // Extract the data from which to populate the chart.
             // Because the samples are equidistant, the 'Sample'
@@ -171,7 +179,7 @@ Walkrr.prototype = {
             }
 
             // Draw the chart using the data within its DIV.
-            jQuery('#elevation_chart_box').show();
+            jQuery('#elevation_chart').dialog('open');
    
             this.chart.draw(data, {
                 legend: 'none',
