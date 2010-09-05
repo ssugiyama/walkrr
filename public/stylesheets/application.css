@@ -5,7 +5,12 @@ a {
     color: #111111;
     font-weight: bold;
 }
-
+#top {
+    width: 100%;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+}
 #left {
         width: 300px;
         position: absolute;
@@ -80,10 +85,4 @@ tr.odd{
 }
 #length {
     color: #ff0000;
-}
-#top_left {
-    float : left;
-}
-#top_right {
-    float : right;
 }
