@@ -35,7 +35,7 @@ class WalksController < ApplicationController
     end
     case params[:condition]
     when "neighbor"
-      point = Point.from_x_y(longitude, latitude, DEFAULT_SRID)
+      point = Point.from_x_y(longitude.to_f, latitude.to_f, DEFAULT_SRID)
 #      sqls << "st_dwithin(transform(path, :srid), transform(:point, :srid), :distance)"
       dlat = radius.to_f / DEG_TO_RAD / EARTH_RADIUS
       dlon = dlat / Math.cos(latitude.to_f * DEG_TO_RAD)
@@ -56,14 +56,14 @@ class WalksController < ApplicationController
 
     end
     conditions = [sqls.join(' and '), values]
-
     @items = Walk.paginate :page => params[:page], :select => "walks.*",  :conditions => conditions, :order => params[:order], :per_page => params[:per_page].to_i
+    
     @message = "Hit #{@items.total_entries} item(s)"
   end
 
   # GETs should be safe (see http://www.w3.org/2001/tag/doc/whenToUseGet.html)
-  verify :method => :post, :only => [ :destroy, :create, :update ],
-         :redirect_to => { :action => :list }
+#  verify :method => :post, :only => [ :destroy, :create, :update ],
+ #        :redirect_to => { :action => :list }
 
 
   def show
@@ -76,7 +76,7 @@ class WalksController < ApplicationController
   end
 
   def create
-    points = params[:create_path].split(",").map{|item| item.split(" ")}
+    points = params[:create_path].split(",").map{|item| item.split(" ").map{|p| p.to_f}}
     path = LineString.from_coordinates(points, DEFAULT_SRID)
     @walk = Walk.new(:date => params[:date], :start => params[:start], :end => params[:end],
                     :path =>path)
@@ -88,12 +88,11 @@ class WalksController < ApplicationController
     end
   end
 
-
   def destroy
     @walks =  params[:id].map{|id| Walk.destroy(id)}
     @message = "destroy following data"
   end
-  
+
   def export_file
     @walks = Walk.find(params[:id])
     headers["Content-Type"] = "application/vnd.google-earth.kml+xml";

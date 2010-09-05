@@ -1,7 +1,11 @@
 // Place your application-specific JavaScript functions and classes here
 // This file is automatically included by javascript_include_tag :defaults
 
-google.load("visualization", "1", {packages:["corechart"]});
+Element.update = function (element, html) {
+    $('#' + element).html(html);
+}
+
+
 var Walkrr = function (){
 
     
@@ -84,7 +88,12 @@ var Walkrr = function (){
         else jQuery("#areasBox").hide();
     }).change();
     jQuery("#radius").val(String(defaultRadius));
-
+    $("#search_form").bind("ajax:before", function () {
+        self.preSearch.apply(self);
+    });
+    $("#create_form").bind("ajax:before", function () {
+        self.preCreate.apply(self);
+    });
     var frame = jQuery("#import_frame");
 
     frame.load(function () {
@@ -96,7 +105,7 @@ var Walkrr = function (){
 var walk;
 
 
-jQuery(document).ready(function (){
+$(document).ready(function (){
     walk = new Walkrr();
 });
 

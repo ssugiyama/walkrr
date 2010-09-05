@@ -1,15 +1,9 @@
 0. prerequisite
-  ruby 1.8 (includng gem)
+  ruby 1.9.2 (or 1.8.7)
+  rails 3.0.0
   postgesql
   postgis
   
-and following gems
-  rake
-  rails
-  GeoRuby
-  mislav-will_paginate
-  pg (or any postgresql driver module)
-  mongrel(optional)
 1. create database and install postgis functions.
 
  % createdb walkdb -E utf8
@@ -23,9 +17,8 @@ and following gems
  % vi config/database.yml
 ...
 
-3. install plugins
- % ./script/plugin install git://github.com/fragility/spatial_adapter.git
- % ./script/plugin install git://github.com/aaronchi/jrails.git
+3. Bundler setup
+ % bundle install
 
 4. migrate db schemas
  % rake db:migrate
@@ -38,5 +31,5 @@ and following gems
 
 6. start server
 
- % ./script/server
+ % ./script/rails s
 

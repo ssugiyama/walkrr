@@ -1,9 +1,9 @@
 body {
     font-size: 11px;
 }
-a.button {
-	border: 2px outset black;
-	text-decoration: none;
+a {
+    color: #111111;
+    font-weight: bold;
 }
 
 #left {
@@ -26,32 +26,17 @@ a.button {
         right: 0px;
 }
 
-
-
 table{
-    border-collapse: collapse;
+    border-collapse: collapse; 
+ 
 }
 tr.even{
-	background-color: #1e4a00;
-    color: white;
+    background-color: #eeeeee;
+    color: black;
 }
 tr.odd{
-	background-color: #459813;
-    color: white;
-}
-
-tr.even a {
-    color: white;
-    font-weight: bold;
-}
-
-tr.odd a {
-    color: white;
-    font-weight: bold;
-}
-
-form {
-	display: inline;
+    background-color: #ffffff;
+    color: black;
 }
 
 .hspacer {
