@@ -12,7 +12,8 @@ var Walkrr = function (){
         center: defaultPos,
         mapTypeId: google.maps.MapTypeId.ROADMAP,
         disableDoubleClickZoom: true,
-        scaleControl: true
+        scaleControl: true,
+        scrollwheel : false
     };
     
     jQuery('#elevation_chart').dialog({width: 600, heght: 250, autoOpen: false, title: 'Elevation Chat'});
