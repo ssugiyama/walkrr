@@ -26,9 +26,9 @@ task :import_sqlite3, :db,  :needs => :environment do |t, args|
   mx = ActiveRecord::Base.connection.select_value("select max(id) from walks") || 0
   p mx
   db = SQLite3::Database.new(args.db)
-  db.execute("select id, date, start, \"end\", length, path from walks where id > #{1300}") do |row|
+  db.execute("select id, date, start, \"end\", length, path from walks where id > #{mx}") do |row|
     puts row.inspect
-    ActiveRecord::Base.connection.execute("insert into walks values(?, ?, ?, ?, st_geomfromkml(?))", row)
+    ActiveRecord::Base.connection.execute("insert into walks values(#{row[0]}, '#{row[1]}', '#{row[2]}', '#{row[3]}', #{row[4]}, st_geomfromkml('#{row[5]}'))")
   end
 
   db.close
