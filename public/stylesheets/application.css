@@ -1,11 +1,16 @@
 body {
     font-size: 11px;
 }
-a.button {
-	border: 2px outset black;
-	text-decoration: none;
+a {
+    color: #111111;
+    font-weight: bold;
 }
-
+#top {
+    width: 100%;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+}
 #left {
         width: 300px;
         position: absolute;
@@ -26,34 +31,33 @@ a.button {
         right: 0px;
 }
 
-
-
 table{
-    border-collapse: collapse;
+    border-collapse: collapse; 
+ 
 }
 tr.even{
-	background-color: #1e4a00;
-    color: white;
+    background-color: #eeeeee;
+    color: black;
 }
 tr.odd{
-	background-color: #459813;
-    color: white;
+    background-color: #ffffff;
+    color: black;
 }
 
-tr.even a {
-    color: white;
-    font-weight: bold;
-}
+td.name div {
+    width: 85px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 
-tr.odd a {
-    color: white;
-    font-weight: bold;
 }
-
-form {
-	display: inline;
+td.date {
+    white-space: nowrap;
 }
-
+td.way {
+    white-space: nowrap;
+    text-align: right;
+}
 .hspacer {
     width: 100px;
 }
@@ -96,9 +100,6 @@ form {
 #length {
     color: #ff0000;
 }
-#top_left {
-    float : left;
-}
-#top_right {
-    float : right;
+#import_form {
+    display: inline;
 }

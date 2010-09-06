@@ -1,11 +1,11 @@
 <%- styles = ["even", "odd"] -%>
-<tr class='<%=  styles[walk_row_counter % 2] %>'>
+<tr class="<%=  styles[walk_row_counter % 2] %>">
   <%- if walk_row.frozen? %>
     <td></td>
-    <td><%= walk_row.date %></td>
+    <td class="date"><%= walk_row.date %></td>
   <%- else %>
-    <td><input type='checkbox' name='id[]' value='<%= walk_row.id %>' /></td>
-    <td><%= link_to_remote(walk_row.date, :url => { :action => "show", :id => walk_row.id, :select => 1 }) %></td>
+    <td><input type="checkbox" name="id[]" value="<%= walk_row.id %>" /></td>
+    <td class="date"><%= link_to_remote(walk_row.date, :url => { :action => "show", :id => walk_row.id, :select => 1 }) %></td>
   <%- end %>
-  <td><%= walk_row.start %></td><td><%= walk_row.end %></td><td style='text-align: right;'><%= "%.1f" % walk_row.length %></td>
+    <td class="name"><div><%= walk_row.start %></div></td><td class="name"><div><%= walk_row.end %></div></td><td class="way"><%= "%.1f" % walk_row.length %></td>
 </tr>
