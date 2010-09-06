@@ -44,6 +44,20 @@ tr.odd{
     color: black;
 }
 
+td.name div {
+    width: 85px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+}
+td.date {
+    white-space: nowrap;
+}
+td.way {
+    white-space: nowrap;
+    text-align: right;
+}
 .hspacer {
     width: 100px;
 }

@@ -71,7 +71,7 @@
           <div>
             <label for="per_page">per page</label><%= text_field_tag "per_page","20" %>
           </div>
-          <%= submit_tag "search" %>
+          <%= submit_tag "search", :disable_with => "searching" %>
         <% end %>
         <%= form_tag({:action => 'create'}, {:id => 'create_form', :remote => true }) do  %>
           <div><label for="date">date</label>
@@ -88,7 +88,7 @@
           </div>
 
           <%= hidden_field_tag 'create_path'  %>
-          <%= submit_tag "create" %>
+          <%= submit_tag "create", :disable_with => "creating" %>
         <% end %>
       </div>
  
@@ -98,10 +98,8 @@
           <%= button_to_function "check all", "$('input[name=id[]]').attr('checked', true);", {}%>
           <%= button_to_function "reset", "$('input[name=id[]]').attr('checked', false);", {}%>
           <%= submit_tag "show", {:onclick => "$('#results_form').attr('action', '#{url_for(:action => :show)}');$('#results_form').attr('data-remote', true);"} %>
-          <%#= button_to_function "export", "$('#results_form').submit();", {}%>
           <%= submit_tag "export", {:onclick => "$('#results_form').attr('action', '#{url_for(:action => :export_file)}');$('#results_form').removeAttr('data-remote');"} %>
-        
-          <%= submit_tag "delete", {:onclick => "$('#results_form').attr('action', '#{url_for(:action => :destroy)}');$('#results_form').attr('data-remote', true);"} %>
+          <%= submit_tag "delete", {:confirm => "Are you sure to delete?", :onclick => "$('#results_form').attr('action', '#{url_for(:action => :destroy)}');$('#results_form').attr('data-remote', true);"} %>
         </div>
             
         <table>
