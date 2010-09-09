@@ -7,14 +7,17 @@ class WalksController < ApplicationController
   DEG_TO_RAD = Math::PI/180
   def index
     @walks = []
-    @areas = Area.find(:all, 
-      :select => "pref||coalesce(city2,'')||coalesce(city1,'') as city, jcode",
-      :conditions => "exists (select * from walks where the_geom && path and intersects(the_geom, path))",
-      :order => "jcode"
-    ).map{|area| [area.city, area.jcode]}
     year_range = ActiveRecord::Base.connection.select_one("select extract(year from min(date)) as min, extract(year from max(date)) as max from walks")
     @year_opts = [''] + (year_range['min'].to_i .. year_range['max'].to_i).to_a.reverse
     @month_opts = [''] + (1 .. 12).to_a
+  end
+
+  def add_area
+    latitude = params[:latitude].to_f
+    longitude = params[:longitude].to_f
+    point = Point.from_x_y(longitude, latitude, DEFAULT_SRID)
+    @area = Area.find(:first, :conditions => ["st_contains(the_geom, :point)", {:point => point}])
+    
   end
 
   def search
@@ -47,7 +50,7 @@ class WalksController < ApplicationController
       })
     when "areas"
       sqls << "id in (select distinct id from walks inner join areas on jcode in (:areas) where path && the_geom and intersects(path, the_geom))"
-      values.merge!({:areas =>params[:areas]})
+      values.merge!({:areas =>params[:areas].split(/,/)})
     when "cross"
       points = params[:search_path].split(",").map{|item| item.split(" ")}
       path = LineString.from_coordinates(points, DEFAULT_SRID)
@@ -76,8 +79,7 @@ class WalksController < ApplicationController
   end
 
   def create
-    points = params[:create_path].split(",").map{|item| item.split(" ").map{|p| p.to_f}}
-    path = LineString.from_coordinates(points, DEFAULT_SRID)
+    path = Geometry.from_ewkt( params[:create_path])
     @walk = Walk.new(:date => params[:date], :start => params[:start], :end => params[:end],
                     :path =>path)
     if @walk.save

@@ -10,8 +10,8 @@ function PathEditor(opt_options) {
     this.polylines = new Array();
     this.earthRadius = 6370986;
 
-    this.generalStyle = {strokeColor : "#0000ff", strokeOpacity: 0.5};
-    this.selectedStyle = {strokeColor : "#ff0000", strokeOpacity : 0.7};
+    this.generalStyle = {strokeColor : "#0000ff", strokeOpacity: 0.5, zIndex: 10};
+    this.selectedStyle = {strokeColor : "#ff0000", strokeOpacity : 0.7, zIndex: 10};
     
     if (!this.get('preEditMarkerIcon')) this.set('preEditMarkerIcon', 'http://maps.google.co.jp/mapfiles/ms/icons/blue-dot.png');
     if (!this.get('editingMarkerIcon')) this.set('editingMarkerIcon', 'http://maps.google.co.jp/mapfiles/ms/icons/red-dot.png');
@@ -29,7 +29,9 @@ function PathEditor(opt_options) {
             self.set('selection', null);
         }
         else {
-            var pl = self.addPolyline([this.getPosition()]);
+            var pl = new google.maps.Polyline({});
+            pl.setPath([this.getPosition()]);
+            self.addPolyline(pl);
             self.set('selection', pl);
         }
     });
@@ -71,52 +73,41 @@ PathEditor.prototype.deleteAll = function () {
     this.polylines = [];     
 }
 
-PathEditor.prototype.getSelectionAsString = function (){
-    if(this.selection == null) return null;
-    var points = [];
-    this.selection.getPath().forEach(function (elem, index){
-        points.push(elem.lng() + " " + elem.lat());
-    });
-
-    return points.join(",");
-}
 
 PathEditor.prototype.showPath = function (str, select) {
 //    clearPath();
-    var pts = str.split(",");
-    var points = [];
-    var bounds = this.map.getBounds();
-    var needsPan = true;
-    for(var i = 0; i < pts.length; i++){
-        var pt = pts[i];
-        var ps = pt.split(" ");
-        if(ps.length < 2) continue;
-        var point = new google.maps.LatLng(ps[1], ps[0]);
-        points.push(point);
-        if(needsPan && bounds.contains(point)) needsPan = false;
+    var pl = Walkrr.wkt2GMap(str);
+    this.addPolyline(pl);
+    if(select) {
+        this.set('selection', pl);
+        var xmin, xmax, ymin, ymax;
+        pl.getPath().forEach(function (elem, i){
+           if (i == 0) {
+               xmin = xmax = elem.lng();
+               ymin = ymax = elem.lat();
+           }
+           else {
+               if (xmin > elem.lng()) xmin = elem.lng();
+               if (xmax < elem.lng()) xmax = elem.lng();
+               if (ymin > elem.lat()) ymin = elem.lat();
+               if (ymax < elem.lat()) ymax = elem.lat();
+           }
+        });
+        var center = new google.maps.LatLng((ymin+ymax)/2, (xmin+xmax)/2);
+        this.map.panTo(center);
     }
-    var pl = this.addPolyline(points);
-    if (needsPan) this.map.panTo(points[0]);
-    if(select) this.set('selection', pl);
 }
 
-PathEditor.prototype.addPolyline = function (points){
-//    if(polyline != null){
-//        map.removeOverlay(polyline);
-//    }
+PathEditor.prototype.addPolyline = function (pl){
 
-    var pl = new google.maps.Polyline(this.generalStyle);
-    pl.setPath(points);
+    pl.setOptions(this.generalStyle);
     pl.setMap(this.map);
     this.polylines.push(pl);
-//        this.setSelectedPolylne(pl);
     var self = this;
 
     google.maps.event.addListener(pl, 'click', function () {
         self.set('selection', pl);
     });
-    return pl;
-
 }
 PathEditor.prototype.selection_changed = function (){
     var prevSelection = this.get('prevSelection');

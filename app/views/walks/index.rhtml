@@ -42,6 +42,7 @@
           <%= hidden_field_tag "latitude" %>
           <%= hidden_field_tag "longitude" %>
           <%= hidden_field_tag "radius" %>
+          <%= hidden_field_tag "areas" %>
           <%= hidden_field_tag 'search_path' %>
           <div id="conditionBox">
             <%= radio_button_tag :condition, "neighbor"%><label for="condition_neighbor">neighbor</label>
@@ -49,10 +50,10 @@
             <%= radio_button_tag :condition, "cross"%><label for="condition_cross">cross</label>
             <%= radio_button_tag :condition, "all", "checked"%><label for="condition_all">all</label>
           </div>
-          <div id="areasBox">
+    <%#      <div id="areasBox">
             <label for="areas">areas</label>
-            <%= select_tag "areas", options_for_select(@areas), {:multiple => true, :size =>5, :name => 'areas[]'} %>
-          </div>
+            <%= select_tag "areas", options_for_select(@areas), {:multiple => true, :size =>5, :name => 'areas[]'} >
+          </div> %>
           <div>
             <label >date</label>
             <%= select_tag "year",
