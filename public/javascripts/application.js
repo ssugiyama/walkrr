@@ -89,7 +89,7 @@ var Walkrr = function (){
             self.areas = [];
             google.maps.event.addListener(self.map, 'click', function (event) {
                 $.ajax({
-                    url: '/add_area',
+                    url: addAreaUrl,
                     data: "latitude=" + event.latLng.lat() + "&longitude=" + event.latLng.lng()
                 });
             });
