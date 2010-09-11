@@ -52,8 +52,7 @@ class WalksController < ApplicationController
       sqls << "id in (select distinct id from walks inner join areas on jcode in (:areas) where path && the_geom and intersects(path, the_geom))"
       values.merge!({:areas =>params[:areas].split(/,/)})
     when "cross"
-      points = params[:search_path].split(",").map{|item| item.split(" ")}
-      path = LineString.from_coordinates(points, DEFAULT_SRID)
+      path = Geometry.from_ewkt( params[:search_path])
       sqls << "path && :path and intersects(path, :path)"
       values.merge!({:path => path})
 

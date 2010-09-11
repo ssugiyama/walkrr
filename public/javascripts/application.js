@@ -182,7 +182,7 @@ Walkrr.prototype = {
             $("#radius").val(radius);
         }
         else if ($("#condition_cross").attr("checked")){
-            $("#search_path").val(this.pathEditor.getSelectionAsString());
+            $("#search_path").val(Walkrr.polyline2wkt(this.pathEditor.selection));
         }
         else if ($("#condition_areas").attr("checked")){
             var ids = [];
