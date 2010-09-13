@@ -10,7 +10,7 @@ var Walkrr = function (){
 
     this.areaStyle = {fillColor : "#00ff00", fillOpacity: 0.1, strokeColor: "#00ff00", strokeOPacity: 0.5,  zIndex: 0};
     var defaultPos = new google.maps.LatLng(35.690,139.70);
-    var defaultRadius = 500;
+    this.defaultRadius = 500;
     var options = {
         zoom: 13,
         center: defaultPos,
@@ -75,36 +75,28 @@ var Walkrr = function (){
     });
     $("#date").datepicker({dateFormat: 'yy-mm-dd'});
     $("#tabs").tabs();
-    $("#conditionBox input").change(function (){
+    google.maps.event.addListener(this.map, 'click', function (event) {
+        if($("#condition_neighbor").attr("checked")){
+            self.distanceWidget.set('position', event.latLng);
+        }
+        else if($("#condition_areas").attr("checked")) {
+            $.ajax({
+                url: addAreaUrl,
+                data: "latitude=" + event.latLng.lat() + "&longitude=" + event.latLng.lng()
+            });
+        }
 
+
+    });
+    $("#conditionBox input").change(function (){
+        self.clear();
         if($("#condition_neighbor").attr("checked")){
             self.distanceWidget.set('map', self.map);
-            self.distanceWidget.set('position', self.map.getCenter());
         }
         else {
             self.distanceWidget.set('map', null);
         }
-        if($("#condition_areas").attr("checked")) {
-//            $("#areasBox").show();
-            self.areas = [];
-            google.maps.event.addListener(self.map, 'click', function (event) {
-                $.ajax({
-                    url: addAreaUrl,
-                    data: "latitude=" + event.latLng.lat() + "&longitude=" + event.latLng.lng()
-                });
-            });
-        }
-        else{
-            for (var id in self.areas) {
-                var pg = self.areas[id];
-                pg.setMap(null);
-            }
-            self.areas = null;
-//          $("#areasBox").hide();
-            google.maps.event.clearListeners(self.map, 'click');
-        }
     }).change();
-    $("#radius").val(String(defaultRadius));
     $("#search_form").bind("ajax:before", function () {
         self.preSearch.apply(self);
     });
@@ -172,7 +164,16 @@ $(document).ready(function (){
 });
 
 Walkrr.prototype = {
-
+    clear : function (){
+        this.pathEditor.deleteAll();
+        for (var id in this.areas) {
+            var pg = this.areas[id];
+            pg.setMap(null);
+        }
+        this.areas = [];
+        this.distanceWidget.set('distance', this.defaultRadius);
+        this.distanceWidget.set('position', this.map.getCenter());
+    },
     preSearch : function (){
         if($("#condition_neighbor").attr("checked")){
             var pt = this.distanceWidget.get('position');
@@ -271,6 +272,7 @@ Walkrr.prototype = {
         }
     },
     addArea : function (id, str) {
+        if (this.areas[id]) return;
         var pg = Walkrr.wkt2GMap(str);
         pg.setOptions(this.areaStyle);
         pg.setMap(this.map);

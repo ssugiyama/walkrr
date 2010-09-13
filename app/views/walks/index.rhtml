@@ -22,7 +22,7 @@
     <div id="top">
         <%= button_to_function "new", "walk.pathEditor.newPath();" , {}, {:class => "button"}%>
         <%= button_to_function "delete", "walk.pathEditor.deletePath();", {}, {:class => "button"}%>
-        <%= button_to_function "clear", "walk.pathEditor.deleteAll();", {}, {:class => "button"}%>
+        <%= button_to_function "clear", "walk.clear();", {}, {:class => "button"}%>
         <%= button_to_function "elevation", "walk.requestElevation();", {}, {:class => "button"}%>
         <%= form_tag({:action => "import"}, {:id => "import_form", :multipart => true, :target => "import_frame", :style => "display: inline;"}) do %>
           <%= file_field_tag "file" %>

@@ -26,7 +26,7 @@ function PathEditor(opt_options) {
     });
     google.maps.event.addListener(this.marker, 'click', function () {
         if(self.selection) {
-            self.set('selection', null);
+   //         self.set('selection', null);
         }
         else {
             var pl = new google.maps.Polyline({});
