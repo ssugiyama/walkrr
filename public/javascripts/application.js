@@ -33,7 +33,8 @@ var Walkrr = function (){
         color: '#000',
         activeColor: '#59b',
         sizerIcon: new google.maps.MarkerImage('./images/resize-off.png'),
-        activeSizerIcon: new google.maps.MarkerImage('./images/resize.png')
+        activeSizerIcon: new google.maps.MarkerImage('./images/resize.png'),
+        position: defaultPos
     });
     this.pathEditor = new PathEditor({map: map});
 
@@ -89,13 +90,20 @@ var Walkrr = function (){
 
     });
     $("#conditionBox input").change(function (){
-        self.clear();
+       
         if($("#condition_neighbor").attr("checked")){
             self.distanceWidget.set('map', self.map);
         }
         else {
             self.distanceWidget.set('map', null);
         }
+        var showAreas = $("#condition_areas").attr("checked");
+        for (var id in self.areas) {
+            var pg = self.areas[id];
+            pg.setMap(showAreas?self.map:null);
+        }
+
+
     }).change();
     $("#search_form").bind("ajax:before", function () {
         self.preSearch.apply(self);
@@ -164,15 +172,15 @@ $(document).ready(function (){
 });
 
 Walkrr.prototype = {
-    clear : function (){
-        this.pathEditor.deleteAll();
-        for (var id in this.areas) {
-            var pg = this.areas[id];
-            pg.setMap(null);
-        }
+    resetSearch : function (){
+        $("#search_form").each(function (){
+           this.reset();
+        });
+        $("#conditionBox input").change();
         this.areas = [];
         this.distanceWidget.set('distance', this.defaultRadius);
         this.distanceWidget.set('position', this.map.getCenter());
+   
     },
     preSearch : function (){
         if($("#condition_neighbor").attr("checked")){
