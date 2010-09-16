@@ -120,7 +120,7 @@
     <div id="elevation_chart"></div>
     <div id="panorama_box">
       <div id="panorama"></div>
-      <div id="panorama_control"><%= button_to_function "◀◀", "walk.firstPanorama();" %><%= button_to_function "◀", "walk.prevPanorama();" %><span id="panorama_index_count"></span><%= button_to_function "▶", "walk.nextPanorama();" %><%= button_to_function "▶▶", "walk.lastPanorama();" %></div>
+      <div id="panorama_control"><%= button_to_function "◀◀", "walk.backwardPanorama();" %><%= button_to_function "◀", "walk.prevPanorama();" %><span id="panorama_index_count"></span><%= button_to_function "▶", "walk.nextPanorama();" %><%= button_to_function "▶▶", "walk.forwardPanorama();" %></div>
     </div>
         
         

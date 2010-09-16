@@ -31,7 +31,9 @@ var Walkrr = function (){
     this.map = map;
     this.panorama = new google.maps.StreetViewPanorama(document.getElementById("panorama"), {});
     this.map.setStreetView(this.panorama);
+    this.panorama.setVisible(true);
     this.panoramaIndex = 0;
+    this.panoramaInterval = 100;
     this.distanceWidget = new DistanceWidget({
         color: '#000',
         activeColor: '#59b',
@@ -55,6 +57,7 @@ var Walkrr = function (){
         self.elevationMarker.setMap(null);
     });
     google.maps.event.addListener(this.pathEditor, 'selection_changed', function () {
+        self.panoramaPointsAndHeadings = self.getPanoramaPointsAndHeadings();
         if (this.selection){
             $("#editing_label").show();
             if($('#elevation_chart').dialog('isOpen')){
@@ -305,22 +308,31 @@ Walkrr.prototype = {
 //    alert("(" + pt1.lng().toString() + "," + pt1.lat().toString()+ ")-(" + pt2.lng().toString() + ","+ pt2.lat().toString() + ")=" + ret);
         return ret;
     },
+    getDistance:  function(p1, p2) {
+        if (!p1 || !p2) {
+        return 0;
+        }
 
+        var R = 6370986; // Radius of the Earth in km
+        var d2r = Math.PI/180;
+        var x = (p1.lng()-p2.lng())*d2r*Math.cos((p1.lat()+p2.lat())/2*d2r);
+        var y = (p1.lat()-p2.lat())*d2r;
+        return Math.sqrt(x*x + y*y)*R;
+    },
     showPanorama : function () {
-        if (!this.pathEditor.selection) return;
-        var path = this.pathEditor.selection.getPath();
-        var count = path.getLength();
+        if (!this.panoramaPointsAndHeadings) return;
+        var count = this.panoramaPointsAndHeadings.length;
         if (this.panoramaIndex < 0) this.panoramaIndex = 0;
         else if(this.panoramaIndex >=  count) this.panoramaIndex = count -1;
-        var pt1 = path.getAt(this.panoramaIndex);
-        var pt2 = (this.panoramaIndex+1 < count)?path.getAt(this.panoramaIndex+1):path.getAt(this.panoramaIndex-1);
-        var heading = (this.panoramaIndex+1 < count)?this.getHeading(pt1, pt2):this.getHeading(pt2, pt1);
-        this.panorama.setPosition(pt1);
+        var item = this.panoramaPointsAndHeadings[this.panoramaIndex];
+        var pt = item[0];
+        var heading = item[1];
+        this.panorama.setPosition(pt);
         this.panorama.setPov({heading: heading, zoom: 1, pitch: 0});
         $("#panorama_box").dialog('open');
-        this.panorama.setVisible(true);
+        
         $('#panorama_index_count').html((this.panoramaIndex+1).toString() + '/' + count.toString());
-        this.map.setCenter(pt1);
+        this.map.setCenter(pt);
     },
     
     nextPanorama : function (){
@@ -332,13 +344,40 @@ Walkrr.prototype = {
         this.panoramaIndex --;
         this.showPanorama();
     },
-    firstPanorama : function (){
-        this.panoramaIndex = 0;
+    backwardPanorama : function (){
+        this.panoramaIndex -= 10;
         this.showPanorama();
     },
-    lastPanorama : function () {
-        this.panoramaIndex = Number.MAX_VALUE;
+    forwardPanorama : function () {
+        this.panoramaIndex += 10;
         this.showPanorama();
+    },
+    interpolatePoints : function(pt1, pt2, r) {
+      return new google.maps.LatLng(r*pt2.lat() + (1-r)*pt1.lat(), r*pt2.lng() + (1-r)*pt1.lng());
+    },
+    getPanoramaPointsAndHeadings: function () {
+        if (!this.pathEditor.selection) return null;
+        var pph = [];
+        var path = this.pathEditor.selection.getPath();
+        var count = path.getLength();
+        var way = 0;
+        var dsum = 0;
+        for (var i= 0; i < count-1; i++) {
+            var pt1 = path.getAt(i);
+            var pt2 = path.getAt(i+1);
+            var d = this.getDistance(pt1, pt2);
+            var h = this.getHeading(pt1, pt2);
+            
+            while(way < dsum+d ) {
+                var pt = this.interpolatePoints(pt1, pt2, (way - dsum)/d);
+                pph.push([pt, h]);
+                way += this.panoramaInterval;
+            }
+            dsum += d;
+        }
+        pph.push([pt2, h]);
+        return pph;
+
     }
 
 
