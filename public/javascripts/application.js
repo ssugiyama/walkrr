@@ -17,18 +17,21 @@ var Walkrr = function (){
         mapTypeId: google.maps.MapTypeId.ROADMAP,
         disableDoubleClickZoom: true,
         scaleControl: true,
-        scrollwheel : false
+        scrollwheel : false,
+        streetViewControl: true
     };
     
     $('#elevation_chart').dialog({width: 600, heght: 250, autoOpen: false, title: 'Elevation Chat'});
-
+    $('#panorama_box').dialog({width: 480, height : 340, autoOpen: false, title: 'Street View'});
     var map = new google.maps.Map(document.getElementById("map"), options);
     var self = this;
 
     this.earthRadius = 6370986;
 
     this.map = map;
-
+    this.panorama = new google.maps.StreetViewPanorama(document.getElementById("panorama"), {});
+    this.map.setStreetView(this.panorama);
+    this.panoramaIndex = 0;
     this.distanceWidget = new DistanceWidget({
         color: '#000',
         activeColor: '#59b',
@@ -57,10 +60,15 @@ var Walkrr = function (){
             if($('#elevation_chart').dialog('isOpen')){
                 self.requestElevation();
             }
+            self.panoramaIndex = 0;
+            if($('#panorama_box').dialog('isOpen')){            
+                self.showPanorama();
+            }
         }
         else {
             $("#editing_label").hide();
             $('#elevation_chart').dialog('close');
+            $('#panorama_box').dialog('close');
         }
     });
     google.maps.event.addListener(this.pathEditor, 'length_changed', function () {
@@ -291,7 +299,49 @@ Walkrr.prototype = {
             pg = null;
             delete self.areas[id];
         });
+    },
+    getHeading : function (pt1, pt2){
+        var ret = Math.atan2((pt2.lng() - pt1.lng())*Math.cos(pt1.lat()*Math.PI/180), pt2.lat() - pt1.lat())*180/Math.PI;
+//    alert("(" + pt1.lng().toString() + "," + pt1.lat().toString()+ ")-(" + pt2.lng().toString() + ","+ pt2.lat().toString() + ")=" + ret);
+        return ret;
+    },
+
+    showPanorama : function () {
+        if (!this.pathEditor.selection) return;
+        var path = this.pathEditor.selection.getPath();
+        var count = path.getLength();
+        if (this.panoramaIndex < 0) this.panoramaIndex = 0;
+        else if(this.panoramaIndex >=  count) this.panoramaIndex = count -1;
+        var pt1 = path.getAt(this.panoramaIndex);
+        var pt2 = (this.panoramaIndex+1 < count)?path.getAt(this.panoramaIndex+1):path.getAt(this.panoramaIndex-1);
+        var heading = (this.panoramaIndex+1 < count)?this.getHeading(pt1, pt2):this.getHeading(pt2, pt1);
+        this.panorama.setPosition(pt1);
+        this.panorama.setPov({heading: heading, zoom: 1, pitch: 0});
+        $("#panorama_box").dialog('open');
+        this.panorama.setVisible(true);
+        $('#panorama_index_count').html((this.panoramaIndex+1).toString() + '/' + count.toString());
+        this.map.setCenter(pt1);
+    },
+    
+    nextPanorama : function (){
+        this.panoramaIndex ++;
+        this.showPanorama();
+    },
+
+    prevPanorama : function (){
+        this.panoramaIndex --;
+        this.showPanorama();
+    },
+    firstPanorama : function (){
+        this.panoramaIndex = 0;
+        this.showPanorama();
+    },
+    lastPanorama : function () {
+        this.panoramaIndex = Number.MAX_VALUE;
+        this.showPanorama();
     }
+
+
 }
 
 

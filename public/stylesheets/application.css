@@ -31,6 +31,20 @@ a {
         right: 0px;
 }
 
+#panorama {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    right: 0px;
+    bottom: 20px;
+}
+#panorama_control {
+    position: absolute;
+    bottom: 0px;
+    text-align: center;
+    left: 0px;
+    right: 0px;
+}
 table{
     border-collapse: collapse; 
  

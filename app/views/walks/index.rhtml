@@ -24,6 +24,7 @@
         <%= button_to_function "delete", "walk.pathEditor.deletePath();" %>
         <%= button_to_function "clear", "walk.pathEditor.deleteAll();" %>
         <%= button_to_function "elevation", "walk.requestElevation();" %>
+        <%= button_to_function "street view", "walk.showPanorama();" %>
         <%= form_tag({:action => "import"}, {:id => "import_form", :multipart => true, :target => "import_frame", :style => "display: inline;"}) do %>
           <%= file_field_tag "file" %>
           <%= button_to_function "import", "walk.importFile();"%>
@@ -117,7 +118,10 @@
     <div id="map"></div>
    
     <div id="elevation_chart"></div>
-
+    <div id="panorama_box">
+      <div id="panorama"></div>
+      <div id="panorama_control"><%= button_to_function "◀◀", "walk.firstPanorama();" %><%= button_to_function "◀", "walk.prevPanorama();" %><span id="panorama_index_count"></span><%= button_to_function "▶", "walk.nextPanorama();" %><%= button_to_function "▶▶", "walk.lastPanorama();" %></div>
+    </div>
         
         
   </body>
