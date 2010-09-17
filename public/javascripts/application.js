@@ -7,7 +7,7 @@ Element.update = function (element, html) {
 
 
 var Walkrr = function (){
-
+    var self = this;
     this.areaStyle = {fillColor : "#00ff00", fillOpacity: 0.1, strokeColor: "#00ff00", strokeOPacity: 0.5,  zIndex: 0};
     var defaultPos = new google.maps.LatLng(35.690,139.70);
     this.defaultRadius = 500;
@@ -22,14 +22,21 @@ var Walkrr = function (){
     };
     
     $('#elevation_chart').dialog({width: 600, heght: 250, autoOpen: false, title: 'Elevation Chat'});
-    $('#panorama_box').dialog({width: 480, height : 340, autoOpen: false, title: 'Street View'});
+    $('#panorama_box').dialog({
+        width: 480, height : 340, autoOpen: false, title: 'Street View',
+        close: function (event, ui) {
+            self.panorama.setVisible(false);
+        }
+
+    });
     var map = new google.maps.Map(document.getElementById("map"), options);
-    var self = this;
+   
 
     this.earthRadius = 6370986;
-
+    this.areas = [];
     this.map = map;
     this.panorama = new google.maps.StreetViewPanorama(document.getElementById("panorama"), {});
+    this.streetViewService = new google.maps.StreetViewService();
     this.map.setStreetView(this.panorama);
     this.panorama.setVisible(true);
     this.panoramaIndex = 0;
@@ -313,11 +320,11 @@ Walkrr.prototype = {
         return 0;
         }
 
-        var R = 6370986; // Radius of the Earth in km
+       // Radius of the Earth in km
         var d2r = Math.PI/180;
         var x = (p1.lng()-p2.lng())*d2r*Math.cos((p1.lat()+p2.lat())/2*d2r);
         var y = (p1.lat()-p2.lat())*d2r;
-        return Math.sqrt(x*x + y*y)*R;
+        return Math.sqrt(x*x + y*y)*this.earthRadius;
     },
     showPanorama : function () {
         if (!this.panoramaPointsAndHeadings) return;
@@ -327,8 +334,18 @@ Walkrr.prototype = {
         var item = this.panoramaPointsAndHeadings[this.panoramaIndex];
         var pt = item[0];
         var heading = item[1];
-        this.panorama.setPosition(pt);
-        this.panorama.setPov({heading: heading, zoom: 1, pitch: 0});
+        var self = this;
+        this.streetViewService.getPanoramaByLocation(pt, 50, function (data, status){
+            if (status == google.maps.StreetViewStatus.OK) {
+                self.panorama.setPano(data.location.pano);
+                self.panorama.setPov({heading: heading, zoom: 1, pitch: 0});
+                self.panorama.setVisible(true);
+            }
+            else {
+
+            }
+        });
+ 
         $("#panorama_box").dialog('open');
         
         $('#panorama_index_count').html((this.panoramaIndex+1).toString() + '/' + count.toString());
