@@ -342,7 +342,7 @@ Walkrr.prototype = {
                 self.panorama.setVisible(true);
             }
             else {
-
+                self.panorama.setVisible(false);
             }
         });
  
