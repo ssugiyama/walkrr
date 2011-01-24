@@ -299,8 +299,14 @@ Walkrr.prototype = {
     },
     addArea : function (id, str) {
         if (this.areas[id]) return;
-        var pg = Walkrr.wkt2GMap(str);
-        pg.setOptions(this.areaStyle);
+	alert(str.length);
+//        var pg = Walkrr.wkt2GMap(str);
+        var paths = str.split(" ").map(function (element, index, array){
+            return google.maps.geometry.encoding.decodePath(element);
+        });
+        var pg =  new google.maps.Polygon({});
+        pg.setPaths(paths);
+	pg.setOptions(this.areaStyle);
         pg.setMap(this.map);
         this.areas[id] = pg;
         var self = this;

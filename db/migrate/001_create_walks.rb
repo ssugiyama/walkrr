@@ -5,10 +5,10 @@ class CreateWalks < ActiveRecord::Migration
       t.column "start", :text, :null => false
       t.column "end", :text, :null => false
       t.column "length", :float
-      t.column "path", :line_string, :srid => DEFAULT_SRID
+      t.column "path", :line_string, :srid => WalksController::DEFAULT_SRID
     end
     add_index "walks", ["path"], :name => "walks_path_index", :spatial=> true 
-    add_index "walks", ["transform(path,#{PROJECTION_SRID})"], :name => "walks_path_index_projection", :spatial=> true
+#    add_index "walks", ["transform(path,#{PROJECTION_SRID})"], :name => "walks_path_index_projection", :spatial=> true
   end
 
   def self.down

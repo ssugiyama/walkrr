@@ -26,7 +26,7 @@
 5. setup areas table
  in case of using japan.shp, visit http://www.esrij.com/products/gis_data/japanshp/japanshp.html and download zip file japan_ver62.zip. then extract japan_ver62.shp to a working directory.
  
- % shp2pgsql japan_ver62.shp -s 4326 -g the_geom -I  areas -W sjis > areas.sql
+ % shp2pgsql -s 4326 -g the_geom -I -W sjis japan_ver62.shp areas > areas.sql
  % psql walkdb -f areas.sql
 
 6. start server

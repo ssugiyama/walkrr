@@ -76,7 +76,10 @@ PathEditor.prototype.deleteAll = function () {
 
 PathEditor.prototype.showPath = function (str, select) {
 //    clearPath();
-    var pl = Walkrr.wkt2GMap(str);
+//    var pl = Walkrr.wkt2GMap(str);
+    var pl = new google.maps.Polyline({});
+    pl.setPath(google.maps.geometry.encoding.decodePath(str));
+
     this.addPolyline(pl);
     if(select) {
         this.set('selection', pl);

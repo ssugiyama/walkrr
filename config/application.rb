@@ -2,9 +2,13 @@ require File.expand_path('../boot', __FILE__)
 
 require 'rails/all'
 
+
 # If you have a Gemfile, require the gems listed there, including any gems
 # you've limited to :test, :development, or :production.
 Bundler.require(:default, Rails.env) if defined?(Bundler)
+require './lib/geometry_encode_util'
+require './lib/line_string_ext'
+require './lib/multi_polygon_ext'
 
 module Walkrr
   class Application < Rails::Application
@@ -38,5 +42,6 @@ module Walkrr
 
     # Configure sensitive parameters which will be filtered from the log file.
     config.filter_parameters += [:password]
+
   end
 end

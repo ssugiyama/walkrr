@@ -19,12 +19,3 @@ end
 #  end # Helpers
 #end # ActionView
 
-module GeoRuby
-  module SimpleFeatures
-    class LineString
-      def xmps_poslist
-        map {|point| "#{point.y},#{point.x}"}.join(",")
-      end      
-    end
-  end
-end
