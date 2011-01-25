@@ -7,14 +7,19 @@ task :export_sqlite3, :db,  :needs => :environment do |t, args|
 
   p args.db
   db = SQLite3::Database.new(args.db)
-  mx = db.get_first_value('select max(id) from walks') || 0
-  p mx
+  begin
+    mx = db.get_first_value('select max(id) from walks') || 0
+  rescue
+    db.execute('create table walks (id integer primary key, date date, start text, end text, length number, path text)')
+    db.execute('create index walks_date_index  on walks (date)')
+    retry
+  end
   
   walks = Walk.where("id > ?", mx)
   
-  rows.each do |walk|
+  walks.each do |walk|
     db.execute('insert into walks values(:id, :date, :start, :end, :length, :path)',
-      {:id => walk.id, :date => walk.date, :start => walk.start, :end => walk['end'], :length => walk.length, :path => walk.path.as_encoded_path})
+      {:id => walk.id, :date => walk.date.to_s, :start => walk.start, :end => walk['end'], :length => walk.length, :path => walk.path.as_encoded_path})
   end
   db.close
 end

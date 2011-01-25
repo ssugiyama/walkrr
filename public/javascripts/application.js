@@ -139,48 +139,6 @@ var Walkrr = function (){
     });
 }
 
-Walkrr.wkt2GMap = function (wkt) {
-    var parsePointsString = function (str) {
-        var ps = str.split(/,/);
-        return ps.map(function (element, index, array) {
-            var ns = element.split(/ /);
-            return new google.maps.LatLng(ns[1], ns[0]);
-        });
-    };
- 
-    if (!wkt.match(/^(\w+)\((.+)\)$/)) return null;
-    var name = RegExp.$1;
-    var contents = RegExp.$2;
-    if (name == 'LINESTRING') {
-        var points = parsePointsString(contents);
-        var polyline = new google.maps.Polyline({});
-        polyline.setPath(points);
-        return polyline;
-    }
-    else if (name == 'MULTIPOLYGON') {
-        var items = contents.match(/\(\([\d, .]+\)\)/g);
-      
-        var paths = items.map(function (element, index, array){
-            return parsePointsString(element.substr(2, element.length-4));
-        });
-        var polygon =  new google.maps.Polygon({});
-        polygon.setPaths(paths);
-        return polygon;
-    }
-
-    return null;
-};
-Walkrr.polyline2wkt = function (pl) {
-    if (!pl) return null;
-    var points = [];
-    pl.getPath().forEach(function (elem, index){
-        points.push(elem.lng() + " " + elem.lat());
-    });
-
-    return "SRID=4326;LINESTRING(" + points.join(",") + ")";
-
-};
-
 
 var walk;
 
@@ -209,7 +167,7 @@ Walkrr.prototype = {
             $("#radius").val(radius);
         }
         else if ($("#condition_cross").attr("checked")){
-            $("#search_path").val(Walkrr.polyline2wkt(this.pathEditor.selection));
+            $("#search_path").val(google.maps.geometry.encoding.encodePath(this.pathEditor.selection.getPath()));
         }
         else if ($("#condition_areas").attr("checked")){
             var ids = [];
@@ -220,7 +178,7 @@ Walkrr.prototype = {
         }
     },
     preCreate : function () {
-        $('#create_path').val(Walkrr.polyline2wkt(this.pathEditor.selection));
+        $('#create_path').val(google.maps.geometry.encoding.encodePath(this.pathEditor.selection.getPath()));
     },
     getImportPath : function (frame){
         var pres = frame.contents().find("pre");
