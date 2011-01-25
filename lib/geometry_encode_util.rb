@@ -27,7 +27,7 @@ module GeometryEncodeUtil
       k &= 0x1f
       n |= (k << (j*5))
       if is_last
-        fs << (n >> 1)*(1 - 2*(n & 1))/100000.0
+        fs << ((n >> 1)*(1 - 2*(n & 1)) - (n & 1))/100000.0
         n = j = 0
       else
         j += 1

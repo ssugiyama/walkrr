@@ -257,7 +257,6 @@ Walkrr.prototype = {
     },
     addArea : function (id, str) {
         if (this.areas[id]) return;
-	alert(str.length);
 //        var pg = Walkrr.wkt2GMap(str);
         var paths = str.split(" ").map(function (element, index, array){
             return google.maps.geometry.encoding.decodePath(element);
