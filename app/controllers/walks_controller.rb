@@ -98,10 +98,8 @@ class WalksController < ApplicationController
     @walks = Walk.find(params[:id])
     headers["Content-Type"] = "application/vnd.google-earth.kml+xml";
     headers["Content-Disposition"] = "attachment; filename=walks.kml";
-    srid = DEFAULT_SRID
     action = "export_kml"
-
-    @walks.map{|walk| walk.path = transform_path(walk.path, srid)}
+    
     render :action => action 
   end
 
@@ -122,10 +120,11 @@ class WalksController < ApplicationController
   def import_kml(content)
     puts 'contents:' + content
     doc = REXML::Document.new content
-    doc.elements.collect("//LineString/coordinates") do |elm|
-      elm.text.split(" ").map{|item| item.split(",").join(" ")}.join(",")
+    doc = REXML::Document.new content
+    doc.elements.collect("//LineString") do |elm|
+      line_string = LineString.from_kml(elm.to_s)
+      line_string.as_encoded_path
     end
-      
   end   
 
   def coord_to_f(point, unit)
