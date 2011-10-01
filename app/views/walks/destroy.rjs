@@ -1,3 +1,0 @@
-page.replace_html "tbody", render(:partial => 'walk_row', :collection => @walks)
-page.replace_html "message", @message
-page.replace_html "pagination", ""

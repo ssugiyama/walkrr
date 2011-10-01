@@ -1,13 +1,14 @@
 source 'http://rubygems.org'
 
-gem 'rails', '3.0.3'
+gem 'rails', '3.1.0'
 
 # Bundle edge Rails instead:
 # gem 'rails', :git => 'git://github.com/rails/rails.git'
 
+gem 'rake', '0.8.7'
 gem 'sqlite3-ruby', :require => 'sqlite3'
 gem 'pg'
-gem 'will_paginate', '3.0.pre2'
+gem 'will_paginate'
 gem 'GeoRuby'
 gem 'spatial_adapter'
 # Use unicorn as the web server

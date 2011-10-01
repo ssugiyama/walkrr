@@ -17,6 +17,12 @@
       google.load("visualization", "1", {packages:["corechart"]});
     </script>
     <%= javascript_include_tag :all, :cache => true %>      
+    <script>
+      var walk;
+      $(document).ready(function () {
+          walk = new Walkrr();
+      });
+    </script>
   </head>
   <body>
     <div id="top">

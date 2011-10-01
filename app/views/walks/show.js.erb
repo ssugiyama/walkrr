@@ -1,0 +1,3 @@
+<% @walks.each do |walk| %>
+  walk.pathEditor.showPath("<%= escape_javascript(walk.path.as_encoded_path) %>" , <%= @select %>);
+<% end %>

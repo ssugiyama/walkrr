@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://earth.google.com/kml/2.0">
+  <Document>
+    <name>Walkrr</name>
+    <Style id="defaultStyle">
+      <LineStyle>
+        <width>2</width>
+        <color>c00000ff</color>
+      </LineStyle>
+    </Style>
+<% @walks.each do |walk|  %>
+    <Placemark>
+      <name><%= walk.date %></name>
+      <description><%= walk.start %> - <%= walk.end %></description>
+      <styleUrl>#defaultStyle</styleUrl>
+<LineString><coordinates><%= walk.path.kml_poslist({}) %></coordinates></LineString>
+    </Placemark>
+<% end  %>
+  </Document>
+</kml>
+

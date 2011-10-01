@@ -1,1 +1,0 @@
-page.call("walk.addArea", @area.jcode, @area.the_geom.as_encoded_paths)

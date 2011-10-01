@@ -1,3 +1,0 @@
-@paths.each do |path|
-  page.call('walk.pathEditor.showPath', path)
-end

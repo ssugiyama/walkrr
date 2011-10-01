@@ -1,3 +1,0 @@
-@walks.each do |walk|
-  page.call("walk.pathEditor.showPath", walk.path.as_encoded_path, @select)
-end

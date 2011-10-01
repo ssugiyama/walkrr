@@ -1,4 +1,0 @@
-#page.replace_html "pagination",  pagination_links_remote(@pages, {}, {:submit => "search_form"}, {})
-page.replace_html "pagination", will_paginate(@items, :previous_label => '&laquo; ', :next_label => '&raquo;', :inner_window => 1, :outer_window => 0)
-page.replace_html "tbody", render(:partial => 'walk_row', :collection => @items)
-page.replace_html "message", @message

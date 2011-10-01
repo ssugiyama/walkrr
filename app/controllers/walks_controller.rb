@@ -17,7 +17,6 @@ class WalksController < ApplicationController
     longitude = params[:longitude].to_f
     point = Point.from_x_y(longitude, latitude, DEFAULT_SRID)
     @area = Area.find(:first, :conditions => ["st_contains(the_geom, :point)", {:point => point}])
-    
   end
 
   def search
@@ -79,8 +78,9 @@ class WalksController < ApplicationController
 
   def create
     path = LineString.from_encoded_path( params[:create_path], DEFAULT_SRID)
-    @walk = Walk.new(:date => params[:date], :start => params[:start], :end => params[:end],
-                    :path =>path)
+#temporary hack for https://github.com/fragility/spatial_adapter/issues/26
+    @walk = Walk.create(:date => params[:date], :start => params[:start], :end => params[:end])
+    @walk.path = path
     if @walk.save
       @walk = Walk.find(@walk[:id])
       @message = "create following data"
@@ -98,9 +98,8 @@ class WalksController < ApplicationController
     @walks = Walk.find(params[:id])
     headers["Content-Type"] = "application/vnd.google-earth.kml+xml";
     headers["Content-Disposition"] = "attachment; filename=walks.kml";
-    action = "export_kml"
-    
-    render :action => action 
+
+    render :template => 'walks/export_kml.xml.erb'
   end
 
   def import
@@ -113,13 +112,13 @@ class WalksController < ApplicationController
     when ".xmps"
       import_xmps(content)       
     end
+    render :template => 'walks/import.js.erb'
   end
 
   private
   
   def import_kml(content)
     puts 'contents:' + content
-    doc = REXML::Document.new content
     doc = REXML::Document.new content
     doc.elements.collect("//LineString") do |elm|
       line_string = LineString.from_kml(elm.to_s)
