@@ -30,12 +30,12 @@ var Walkrr = function (){
 
     });
     var map = new google.maps.Map(document.getElementById("map"), options);
-   
 
     this.earthRadius = 6370986;
     this.areas = [];
     this.map = map;
-    this.panorama = new google.maps.StreetViewPanorama(document.getElementById("panorama"), {});
+    this.panorama = new google.maps.StreetViewPanorama(document.getElementById("panorama"), {addressControl: true, navigationControl: true});
+//    this.panorama.setOptions({});
     this.streetViewService = new google.maps.StreetViewService();
     this.map.setStreetView(this.panorama);
     this.panorama.setVisible(true);
@@ -48,8 +48,9 @@ var Walkrr = function (){
         activeSizerIcon: new google.maps.MarkerImage('./images/resize.png'),
         position: defaultPos
     });
+    this.loadCenterAndZoom();
     this.pathEditor = new PathEditor({map: map});
-
+    this.pathEditor.loadFromLocalStorage();
     this.elevator = new google.maps.ElevationService();
     this.elevationMarker = new google.maps.Marker({icon : 'http://maps.google.co.jp/mapfiles/ms/icons/yellow.png'});
 
@@ -107,6 +108,14 @@ var Walkrr = function (){
 
 
     });
+    google.maps.event.addListener(this.map, 'center_changed', function () {
+	self.storeCenterAndZoom();
+    });
+
+    google.maps.event.addListener(this.map, 'zoom_changed', function () {
+	self.storeCenterAndZoom();
+    });
+
     $("#conditionBox input").change(function (){
        
         if($("#condition_neighbor").attr("checked")){
@@ -137,15 +146,8 @@ var Walkrr = function (){
         self
         .getImportPath(frame);
     });
+
 }
-
-
-var walk;
-
-
-$(document).ready(function (){
-    walk = new Walkrr();
-});
 
 Walkrr.prototype = {
     resetSearch : function (){
@@ -358,9 +360,24 @@ Walkrr.prototype = {
         pph.push([pt2, h]);
         return pph;
 
+    }, 
+    storeCenterAndZoom: function () {
+	if (localStorage) {
+	    var center = this.map.getCenter();
+	    var array = [center.lat(), center.lng(), this.map.getZoom()];
+	    localStorage['centerAndZoom'] = JSON.stringify(array);
+	}
+
+
+    }, 
+    loadCenterAndZoom: function () {
+	if (localStorage && localStorage['centerAndZoom']) {
+	    var array = JSON.parse(localStorage["centerAndZoom"]);
+	    var center = new google.maps.LatLng(array[0], array[1]);
+	    this.map.setCenter(center);
+	    this.map.setZoom(array[2]);
+	}
     }
-
-
 }
 
 

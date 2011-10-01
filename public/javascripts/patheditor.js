@@ -17,7 +17,7 @@ function PathEditor(opt_options) {
     if (!this.get('editingMarkerIcon')) this.set('editingMarkerIcon', 'http://maps.google.co.jp/mapfiles/ms/icons/red-dot.png');
     this.marker = new google.maps.Marker({draggable : true});
     
-    this.set('selection', null);
+//    this.set('selection', null);
     this.set('length', 0);
     this.set('prevSelection', null);
     var self = this;
@@ -43,6 +43,7 @@ function PathEditor(opt_options) {
     });
     google.maps.event.addListener(this.marker, 'dragend', function () {
         if(self.selection) self.set('length', self.getSelectionLength());
+	self.storeInLocalStorage();
     });
    
     
@@ -135,6 +136,7 @@ PathEditor.prototype.selection_changed = function (){
         this.marker.setIcon(this.preEditMarkerIcon);
         this.marker.setMap(null);
     }
+    this.storeInLocalStorage();
     this.set('length', this.getSelectionLength());
 }
 
@@ -168,6 +170,11 @@ PathEditor.prototype.deletePoint = function () {
         path.pop();
         this.marker.setPosition(path.getAt(len-2));
     }
+    if(localStorage) {
+	localStorage
+
+    }
+    this.storeInLocalStorage();
     this.set('length', this.getSelectionLength());
 }
 
@@ -188,4 +195,26 @@ PathEditor.prototype.getSelectionLength = function (){
         }
     }
     return sum;
+}
+
+PathEditor.prototype.storeInLocalStorage = function (){
+    if (localStorage) {
+
+	if (this.selection) {
+	    console.log('store');
+	    localStorage['editingPath'] = google.maps.geometry.encoding.encodePath(this.selection.getPath());
+	}
+	else {
+	    console.log('delete');
+            delete localStorage['editingPath'];
+	}
+    }
+
+}
+
+PathEditor.prototype.loadFromLocalStorage = function (){
+    if(! localStorage || !localStorage['editingPath']) return false;
+    console.log('load');
+    this.showPath(localStorage['editingPath'], true);
+    return true;
 }
