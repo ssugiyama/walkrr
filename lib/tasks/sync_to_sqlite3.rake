@@ -3,7 +3,7 @@
 require 'sqlite3'
 
 desc "export data to sqlite3"
-task :export_sqlite3, :db,  :needs => :environment do |t, args|
+task :export_sqlite3, [:db] => [:environment] do |t, args|
 
   p args.db
   db = SQLite3::Database.new(args.db)
@@ -25,7 +25,7 @@ task :export_sqlite3, :db,  :needs => :environment do |t, args|
 end
 
 desc "import data from sqlite3"
-task :import_sqlite3, :db,  :needs => :environment do |t, args|
+task :import_sqlite3, [:db] => [:environment] do |t, args|
 
   mx = ActiveRecord::Base.connection.select_value("select max(id) from walks") || 0
   p mx
