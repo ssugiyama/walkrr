@@ -1,6 +1,6 @@
 0. prerequisite
   ruby 1.9.2 (or 1.8.7)
-  rails 3.0.0
+  rails 3.1.x
   postgesql
   postgis
   
@@ -18,13 +18,15 @@
 ...
 
 3. Bundler setup
+ % vi Gemfile
+...
  % bundle install
 
 4. migrate db schemas
  % rake db:migrate
 
 5. setup areas table
- in case of using japan.shp, visit http://www.esrij.com/products/gis_data/japanshp/japanshp.html and download zip file japan_ver62.zip. then extract japan_ver62.shp to a working directory.
+ in case of using japan.shp, visit http://www.esrij.com/products/gis_data/japanshp/japanshp.html and download zip file japan_ver70.zip. then extract japan_ver70.shp to a working directory.
  
  % shp2pgsql -s 4326 -g the_geom -I -W sjis japan_ver62.shp areas > areas.sql
  % psql walkdb -f areas.sql
