@@ -7,49 +7,55 @@
  * @constructor
  */
 function DistanceWidget(opt_options) {
-  var options = opt_options || {};
+    var options = opt_options || {};
 
-  this.setValues(options);
+    this.setValues(options);
 
-//  if (!this.get('position')) {
-//    this.set('position', this.getMap().getCenter());
-//  }
+    //  if (!this.get('position')) {
+    //    this.set('position', this.getMap().getCenter());
+    //  }
 
-  // Add a marker to the page at the map center or specified position
-  var marker = new google.maps.Marker({
-    draggable: true,
-    title: 'Move me!'
-  });
+    // Add a marker to the page at the map center or specified position
+    var marker = new google.maps.Marker({
+	draggable: true,
+	title: 'Move me!'
+    });
 
-  marker.bindTo('map', this);
-  marker.bindTo('zIndex', this); 
-  marker.bindTo('position', this);
-  marker.bindTo('icon', this);
+    marker.bindTo('map', this);
+    marker.bindTo('zIndex', this); 
+    marker.bindTo('position', this);
+    marker.bindTo('icon', this);
 
-  // Create a new radius widget
-  var radiusWidget = new RadiusWidget(options['distance'] || 500);
+    // Create a new radius widget
+    var radiusWidget = new RadiusWidget(options['distance'] || 500);
 
-  // Bind the radius widget properties.
-  radiusWidget.bindTo('center', this, 'position');
-  radiusWidget.bindTo('map', this);
-  radiusWidget.bindTo('zIndex', marker);
-  radiusWidget.bindTo('maxDistance', this);
-  radiusWidget.bindTo('minDistance', this);
-  radiusWidget.bindTo('color', this);
-  radiusWidget.bindTo('activeColor', this);
-  radiusWidget.bindTo('sizerIcon', this);
-  radiusWidget.bindTo('activeSizerIcon', this);
+    // Bind the radius widget properties.
+    radiusWidget.bindTo('center', this, 'position');
+    radiusWidget.bindTo('map', this);
+    radiusWidget.bindTo('zIndex', marker);
+    radiusWidget.bindTo('maxDistance', this);
+    radiusWidget.bindTo('minDistance', this);
+    radiusWidget.bindTo('color', this);
+    radiusWidget.bindTo('activeColor', this);
+    radiusWidget.bindTo('sizerIcon', this);
+    radiusWidget.bindTo('activeSizerIcon', this);
 
-  // Bind to the radius widget distance property
-  this.bindTo('distance', radiusWidget);
-  // Bind to the radius widget bounds property
-  this.bindTo('bounds', radiusWidget);
+    // Bind to the radius widget distance property
+    this.bindTo('distance', radiusWidget);
+    // Bind to the radius widget bounds property
+    this.bindTo('bounds', radiusWidget);
 
-  var me = this;
-  google.maps.event.addListener(marker, 'dblclick', function() {
-    // When a user double clicks on the icon fit to the map to the bounds
-    map.fitBounds(me.get('bounds'));
-  });
+    var me = this;
+    google.maps.event.addListener(marker, 'dblclick', function() {
+	// When a user double clicks on the icon fit to the map to the bounds
+	map.fitBounds(me.get('bounds'));
+    });
+
+    google.maps.event.addListener(marker, 'position_changed', function() {
+	marker.setTitle(marker.getPosition().toUrlValue(4));
+    });
+
+    
 }
 DistanceWidget.prototype = new google.maps.MVCObject();
 
@@ -61,21 +67,21 @@ DistanceWidget.prototype = new google.maps.MVCObject();
  * @constructor
  */
 function RadiusWidget(opt_distance) {
-  var circle = new google.maps.Circle({
-    strokeWeight: 2
-  });
+    var circle = new google.maps.Circle({
+	strokeWeight: 2
+    });
 
-  this.set('distance', opt_distance);
-  this.set('active', false);
-  this.bindTo('bounds', circle);
+    this.set('distance', opt_distance);
+    this.set('active', false);
+    this.bindTo('bounds', circle);
 
-  circle.bindTo('center', this);
-  circle.bindTo('zIndex', this);
-  circle.bindTo('map', this);
-  circle.bindTo('strokeColor', this);
-  circle.bindTo('radius', this);
+    circle.bindTo('center', this);
+    circle.bindTo('zIndex', this);
+    circle.bindTo('map', this);
+    circle.bindTo('strokeColor', this);
+    circle.bindTo('radius', this);
 
-  this.addSizer_();
+    this.addSizer_();
 }
 RadiusWidget.prototype = new google.maps.MVCObject();
 
@@ -86,29 +92,31 @@ RadiusWidget.prototype = new google.maps.MVCObject();
  * @private
  */
 RadiusWidget.prototype.addSizer_ = function() {
-  var sizer = new google.maps.Marker({
-    draggable: true,
-    title: 'Drag me!'
-  });
+    var sizer = new google.maps.Marker({
+	draggable: true,
+	title: Math.round(this.get('distance')) + ' m'
+    });
 
-  sizer.bindTo('zIndex', this);
-  sizer.bindTo('map', this);
-  sizer.bindTo('icon', this);
-  sizer.bindTo('position', this, 'sizer_position');
+    sizer.bindTo('zIndex', this);
+    sizer.bindTo('map', this);
+    sizer.bindTo('icon', this);
+    sizer.bindTo('position', this, 'sizer_position');
 
-  var me = this;
-  google.maps.event.addListener(sizer, 'dragstart', function() {
-    me.set('active', true);
-  });
+    this.sizer = sizer;
+    var me = this;
+    google.maps.event.addListener(sizer, 'dragstart', function() {
+	me.set('active', true);
+    });
 
-  google.maps.event.addListener(sizer, 'drag', function() {
-    // Set the circle distance (radius)
-    me.setDistance_();
-  });
+    google.maps.event.addListener(sizer, 'drag', function() {
+	// Set the circle distance (radius)
+	me.setDistance_();
+    });
 
-  google.maps.event.addListener(sizer, 'dragend', function() {
-    me.set('active', false);
-  });
+    google.maps.event.addListener(sizer, 'dragend', function() {
+	me.set('active', false);
+    });
+
 };
 
 
@@ -116,17 +124,18 @@ RadiusWidget.prototype.addSizer_ = function() {
  * Update the radius when the distance has changed.
  */
 RadiusWidget.prototype.distance_changed = function() {
-  this.set('radius', this.get('distance'));
+    this.set('radius', this.get('distance'));
+    if (this.sizer) this.sizer.setTitle(Math.round(this.get('distance')) + ' m');
 };
 
 /**
  * Update the radius when the min distance has changed.
  */
 RadiusWidget.prototype.minDistance_changed = function() {
-  if (this.get('minDistance') &&
-      this.get('distance') < this.get('minDistance')) {
-    this.setDistance_();
-  }
+    if (this.get('minDistance') &&
+	this.get('distance') < this.get('minDistance')) {
+	this.setDistance_();
+    }
 };
 
 
@@ -134,10 +143,10 @@ RadiusWidget.prototype.minDistance_changed = function() {
  * Update the radius when the max distance has changed.
  */
 RadiusWidget.prototype.maxDistance_changed = function() {
-  if (this.get('maxDistance') &&
-      this.get('distance') > this.get('maxDistance')) {
-    this.setDistance_();
-  }
+    if (this.get('maxDistance') &&
+	this.get('distance') > this.get('maxDistance')) {
+	this.setDistance_();
+    }
 };
 
 
@@ -145,7 +154,7 @@ RadiusWidget.prototype.maxDistance_changed = function() {
  * Update the stroke color when the color is changed.
  */
 RadiusWidget.prototype.color_changed = function() {
-  this.active_changed();
+    this.active_changed();
 };
 
 
@@ -153,7 +162,7 @@ RadiusWidget.prototype.color_changed = function() {
  * Update the active stroke color when the color is changed.
  */
 RadiusWidget.prototype.activeColor_changed = function() {
-  this.active_changed();
+    this.active_changed();
 };
 
 
@@ -161,7 +170,7 @@ RadiusWidget.prototype.activeColor_changed = function() {
  * Update the active stroke color when the color is changed.
  */
 RadiusWidget.prototype.sizerIcon_changed = function() {
-  this.active_changed();
+    this.active_changed();
 };
 
 
@@ -169,7 +178,7 @@ RadiusWidget.prototype.sizerIcon_changed = function() {
  * Update the active stroke color when the color is changed.
  */
 RadiusWidget.prototype.activeSizerIcon_changed = function() {
-  this.active_changed();
+    this.active_changed();
 };
 
 
@@ -180,51 +189,51 @@ RadiusWidget.prototype.activeSizerIcon_changed = function() {
  * the position of the distance widget is changed.
  */
 RadiusWidget.prototype.center_changed = function() {
-  var sizerPos = this.get('sizer_position');
-  var position;
-  if (sizerPos) {
-    position = this.getSnappedPosition_(sizerPos);
-  } else {
-    var bounds = this.get('bounds');
-    if (bounds) {
-      var lng = bounds.getNorthEast().lng();
-      position = new google.maps.LatLng(this.get('center').lat(), lng);
+    var sizerPos = this.get('sizer_position');
+    var position;
+    if (sizerPos) {
+	position = this.getSnappedPosition_(sizerPos);
+    } else {
+	var bounds = this.get('bounds');
+	if (bounds) {
+	    var lng = bounds.getNorthEast().lng();
+	    position = new google.maps.LatLng(this.get('center').lat(), lng);
+	}
     }
-  }
 
-  if (position) {
-    this.set('sizer_position', position);
-  }
+    if (position) {
+	this.set('sizer_position', position);
+    }
 };
 
 /**
  * Update the center of the circle and position the sizer back on the line.
  */
 RadiusWidget.prototype.active_changed = function() {
-  var strokeColor;
-  var icon;
+    var strokeColor;
+    var icon;
 
-  if (this.get('active')) {
-    if (this.get('activeColor')) {
-      strokeColor = this.get('activeColor');
+    if (this.get('active')) {
+	if (this.get('activeColor')) {
+	    strokeColor = this.get('activeColor');
+	}
+
+	if (this.get('activeSizerIcon')) {
+	    icon = this.get('activeSizerIcon');
+	}
+
+    } else {
+	strokeColor = this.get('color');
+	icon = this.get('sizerIcon');
     }
 
-    if (this.get('activeSizerIcon')) {
-      icon = this.get('activeSizerIcon');
+    if (strokeColor) {
+	this.set('strokeColor', strokeColor);
     }
-  } else {
-    strokeColor = this.get('color');
 
-    icon = this.get('sizerIcon');
-  }
-
-  if (strokeColor) {
-    this.set('strokeColor', strokeColor);
-  }
-
-  if (icon) {
-    this.set('icon', icon);
-  }
+    if (icon) {
+	this.set('icon', icon);
+    }
 };
 
 
@@ -233,26 +242,26 @@ RadiusWidget.prototype.active_changed = function() {
  * @private
  */
 RadiusWidget.prototype.setDistance_ = function() {
-  // As the sizer is being dragged, its position changes.  Because the
-  // RadiusWidget's sizer_position is bound to the sizer's position, it will
-  // change as well.
-  var pos = this.get('sizer_position');
-  var center = this.get('center');
-  var distance = this.distanceBetweenPoints_(center, pos);
+    // As the sizer is being dragged, its position changes.  Because the
+    // RadiusWidget's sizer_position is bound to the sizer's position, it will
+    // change as well.
+    var pos = this.get('sizer_position');
+    var center = this.get('center');
+    var distance = this.distanceBetweenPoints_(center, pos);
 
-  if (this.get('maxDistance') && distance > this.get('maxDistance')) {
-    distance = this.get('maxDistance');
-  }
+    if (this.get('maxDistance') && distance > this.get('maxDistance')) {
+	distance = this.get('maxDistance');
+    }
 
-  if (this.get('minDistance') && distance < this.get('minDistance')) {
-    distance = this.get('minDistance');
-  }
+    if (this.get('minDistance') && distance < this.get('minDistance')) {
+	distance = this.get('minDistance');
+    }
 
-  // Set the distance property for any objects that are bound to it
-  this.set('distance', distance);
+    // Set the distance property for any objects that are bound to it
+    this.set('distance', distance);
 
-  var newPos = this.getSnappedPosition_(pos);
-  this.set('sizer_position', newPos);
+    var newPos = this.getSnappedPosition_(pos);
+    this.set('sizer_position', newPos);
 };
 
 
@@ -264,21 +273,21 @@ RadiusWidget.prototype.setDistance_ = function() {
  * @private.
  */
 RadiusWidget.prototype.getSnappedPosition_ = function(pos) {
-  var bounds = this.get('bounds');
-  var center = this.get('center');
-  var left = new google.maps.LatLng(center.lat(),
-      bounds.getSouthWest().lng());
-  var right = new google.maps.LatLng(center.lat(),
-      bounds.getNorthEast().lng());
+    var bounds = this.get('bounds');
+    var center = this.get('center');
+    var left = new google.maps.LatLng(center.lat(),
+				      bounds.getSouthWest().lng());
+    var right = new google.maps.LatLng(center.lat(),
+				       bounds.getNorthEast().lng());
 
-  var leftDist = this.distanceBetweenPoints_(pos, left);
-  var rightDist = this.distanceBetweenPoints_(pos, right);
+    var leftDist = this.distanceBetweenPoints_(pos, left);
+    var rightDist = this.distanceBetweenPoints_(pos, right);
 
-  if (leftDist < rightDist) {
-    return left;
-  } else {
-    return right;
-  }
+    if (leftDist < rightDist) {
+	return left;
+    } else {
+	return right;
+    }
 };
 
 
@@ -292,15 +301,15 @@ RadiusWidget.prototype.getSnappedPosition_ = function(pos) {
  * @private
  */
 RadiusWidget.prototype.distanceBetweenPoints_ = function(p1, p2) {
-  if (!p1 || !p2) {
-    return 0;
-  }
+    if (!p1 || !p2) {
+	return 0;
+    }
 
-  var R = 6370986; // Radius of the Earth in km
-  var d2r = Math.PI/180;
-  var x = (p1.lng()-p2.lng())*d2r*Math.cos((p1.lat()+p2.lat())/2*d2r);
-  var y = (p1.lat()-p2.lat())*d2r;
-  return Math.sqrt(x*x + y*y)*R;
+    var R = 6370986; // Radius of the Earth in km
+    var d2r = Math.PI/180;
+    var x = (p1.lng()-p2.lng())*d2r*Math.cos((p1.lat()+p2.lat())/2*d2r);
+    var y = (p1.lat()-p2.lat())*d2r;
+    return Math.sqrt(x*x + y*y)*R;
 };
 
 
