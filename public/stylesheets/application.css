@@ -114,3 +114,17 @@ td.way {
 #length {
     color: #ff0000;
 }
+
+.section_title {
+    font-weight: bold;
+}
+
+label:first-child {
+    display: inline-block;
+    width : 60px;
+}
+
+input.readonly {
+    background-color: #e0e0e0;
+    color: #202020;
+}

@@ -26,6 +26,7 @@
   </head>
   <body>
     <div id="top">
+      <span class="section_title">Path:</span>
         <%= button_to_function "new", "walk.pathEditor.newPath();"%>
         <%= button_to_function "delete", "walk.pathEditor.deletePath();" %>
         <%= button_to_function "clear", "walk.pathEditor.deleteAll();" %>
@@ -45,7 +46,7 @@
       <div id="tabs">
         <ul>
           <li><a href="#search_form">search</a></li>
-          <li><a href="#create_form">create</a></li>
+          <li><a href="#admin_form">admin</a></li>
         </ul>
         <%= form_tag({:action => 'search'}, {:id => 'search_form', :remote => true, :method => 'GET'}) do  %>
           <%= hidden_field_tag "latitude" %>
@@ -84,10 +85,11 @@
           <%= submit_tag "search", :disable_with => "searching" %>
           <%= button_to_function 'reset', 'walk.resetSearch()' %>
         <% end %>
-        <%= form_tag({:action => 'create'}, {:id => 'create_form', :remote => true }) do  %>
+        <%= form_tag({:action => 'save'}, {:id => 'admin_form', :remote => true }) do  %>
+          <div><label for="id">id</label>
+          <%= text_field_tag 'id', '', {:readonly => 'readonly', :class => 'readonly'} %></div>
           <div><label for="date">date</label>
           <%= text_field_tag 'date' %></div>
-
           <div>
             <label for="start">start</label>
             <%= text_field_tag 'start'  %>
@@ -98,8 +100,10 @@
             <%= text_field_tag 'end'  %>
           </div>
 
-          <%= hidden_field_tag 'create_path'  %>
-          <%= submit_tag "create", :disable_with => "creating" %>
+          <%= hidden_field_tag 'save_path'  %>
+          <%= submit_tag "save", :disable_with => "saving" %>
+          <%= submit_tag "delete", {:confirm => "Are you sure to delete?", :onclick => "$('#admin_form').attr('action', '#{url_for(:action => :destroy)}');$('#admin_form').attr('data-remote', true);"} %>
+          <%= button_to_function "reset", "this.form.reset();", {}%>
         <% end %>
       </div>
  
@@ -109,8 +113,7 @@
           <%= button_to_function "check all", "$('input[type=checkbox]').attr('checked', true);", {}%>
           <%= button_to_function "reset", "$('input[type=checkbox]').attr('checked', false);", {}%>
           <%= submit_tag "show", {:onclick => "$('#results_form').attr('action', '#{url_for(:action => :show)}');$('#results_form').attr('data-remote', true);"} %>
-          <%= submit_tag "export", {:onclick => "$('#results_form').attr('action', '#{url_for(:action => :export_file)}');$('#results_form').removeAttr('data-remote');"} %>
-          <%= submit_tag "delete", {:confirm => "Are you sure to delete?", :onclick => "$('#results_form').attr('action', '#{url_for(:action => :destroy)}');$('#results_form').attr('data-remote', true);"} %>
+          <%= submit_tag "export", {:onclick => "$('#results_form').attr('action', '#{url_for(:action => :export)}');$('#results_form').removeAttr('data-remote');"} %>
         </div>
             
         <table>

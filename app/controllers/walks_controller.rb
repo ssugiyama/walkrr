@@ -76,30 +76,36 @@ class WalksController < ApplicationController
     @walks = Walk.find(ids)
   end
 
-  def create
-    path = LineString.from_encoded_path( params[:create_path], DEFAULT_SRID)
-#temporary hack for https://github.com/fragility/spatial_adapter/issues/26
-    @walk = Walk.create(:date => params[:date], :start => params[:start], :end => params[:end])
-    @walk.path = path
-    if @walk.save
-      @walk = Walk.find(@walk[:id])
-      @message = "create following data"
+  def save
+    path = LineString.from_encoded_path( params[:save_path], DEFAULT_SRID)
+    if params[:id].blank?
+      #temporary hack for https://github.com/fragility/spatial_adapter/issues/26
+      @walk = Walk.create(:date => params[:date], :start => params[:start], :end => params[:end])
+      @walk.path = path
     else
-      @message = "create failed"
+      @walk = Walk.find(params[:id])      
+      @walk.date = params[:date]
+      @walk.start = params[:start]
+      @walk.end = params[:end]
+      @walk.path = path
     end
+    @walk.save
   end
 
   def destroy
-    @walks =  params[:id].map{|id| Walk.destroy(id)}
-    @message = "destroy following data"
+    @walk =  Walk.destroy(params[:id])
   end
 
-  def export_file
+  def export
+    format = params[:format]
+    format = "kml" unless format
     @walks = Walk.find(params[:id])
-    headers["Content-Type"] = "application/vnd.google-earth.kml+xml";
-    headers["Content-Disposition"] = "attachment; filename=walks.kml";
-
-    render :template => 'walks/export_kml.xml.erb'
+    case format
+      when "kml"
+      headers["Content-Type"] = "application/vnd.google-earth.kml+xml";
+      headers["Content-Disposition"] = "attachment; filename=walks.kml";
+      render :template => 'walks/export_kml.xml.erb'
+    end
   end
 
   def import

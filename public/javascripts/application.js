@@ -135,8 +135,8 @@ var Walkrr = function (){
     $("#search_form").bind("ajax:before", function () {
         self.preSearch.apply(self);
     });
-    $("#create_form").bind("ajax:before", function () {
-        self.preCreate.apply(self);
+    $("#admin_form").bind("ajax:before", function () {
+        self.preSave.apply(self);
     });
 
 
@@ -179,8 +179,8 @@ Walkrr.prototype = {
             $("#areas").val(ids.join(","));
         }
     },
-    preCreate : function () {
-        $('#create_path').val(google.maps.geometry.encoding.encodePath(this.pathEditor.selection.getPath()));
+    preSave : function () {
+        $('#save_path').val(google.maps.geometry.encoding.encodePath(this.pathEditor.selection.getPath()));
     },
     getImportPath : function (frame){
         var pres = frame.contents().find("pre");

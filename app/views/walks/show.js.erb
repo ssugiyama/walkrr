@@ -1,3 +1,9 @@
 <% @walks.each do |walk| %>
   walk.pathEditor.showPath("<%= escape_javascript(walk.path.as_encoded_path) %>" , <%= @select %>);
+  <% if @select %>
+  $('#id').val("<%= walk.id %>");
+  $('#date').val("<%= walk.date %>");
+  $('#start').val("<%= walk.start %>");
+  $('#end').val("<%= walk.end %>");
+  <% end %>
 <% end %>
