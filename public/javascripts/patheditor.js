@@ -82,7 +82,7 @@ PathEditor.prototype.showPath = function (str, select) {
     pl.setPath(google.maps.geometry.encoding.decodePath(str));
 
     this.addPolyline(pl);
-    if(select) {
+    if(select && pl.getPath().getLength() > 0) {
         this.set('selection', pl);
         var xmin, xmax, ymin, ymax;
         pl.getPath().forEach(function (elem, i){
