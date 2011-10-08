@@ -10,21 +10,15 @@
     
     <script src="http://www.google.com/jsapi"></script> 
     <script src="http://maps.google.com/maps/api/js?sensor=true&libraries=geometry"></script>
-    <script>
-      var addAreaUrl = "<%= url_for(:action => :add_area) %>";
-      google.load("jquery", "1.6.4");
-      google.load("jqueryui", "1.8.16");
-      google.load("visualization", "1", {packages:["corechart"]});
-    </script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js"></script>
     <%= javascript_include_tag :all, :cache => true %>      
-    <script>
-      var walk;
-      $(document).ready(function () {
-          walk = new Walkrr();
-      });
-    </script>
+
   </head>
   <body>
+    <input type="hidden" id="default_path" value="<%= @default_path %>" />
+    <input type="hidden" id="add_area_url" value="<%= url_for(:action => :add_area) %>" />
     <div id="top">
       <span class="section_title">Path:</span>
         <%= button_to_function "new", "walk.pathEditor.newPath();"%>
@@ -118,6 +112,7 @@
             
         <table>
           <tbody id="tbody">
+	    <%= render(:partial => 'walk_row', :collection => @walks)  %>
           </tbody>
         </table>
             
@@ -131,7 +126,6 @@
       <div id="panorama"></div>
       <div id="panorama_control"><%= button_to_function "◀◀", "walk.backwardPanorama();" %><%= button_to_function "◀", "walk.prevPanorama();" %><span id="panorama_index_count"></span><%= button_to_function "▶", "walk.nextPanorama();" %><%= button_to_function "▶▶", "walk.forwardPanorama();" %></div>
     </div>
-        
         
   </body>
 </html>

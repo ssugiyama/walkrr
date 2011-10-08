@@ -6,10 +6,15 @@ class WalksController < ApplicationController
   DEFAULT_SRID = 4326
   DEG_TO_RAD = Math::PI/180
   def index
-    @walks = []
     year_range = ActiveRecord::Base.connection.select_one("select extract(year from min(date)) as min, extract(year from max(date)) as max from walks")
     @year_opts = [''] + (year_range['min'].to_i .. year_range['max'].to_i).to_a.reverse
     @month_opts = [''] + (1 .. 12).to_a
+    id = params[:id]
+    unless id.blank?
+      walk = Walk.find(id)
+      @walks = [walk]
+      @default_path = walk.path.as_encoded_path
+    end
   end
 
   def add_area

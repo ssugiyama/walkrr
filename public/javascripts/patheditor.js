@@ -136,7 +136,7 @@ PathEditor.prototype.selection_changed = function (){
         this.marker.setIcon(this.preEditMarkerIcon);
         this.marker.setMap(null);
     }
-    this.storeInLocalStorage();
+    this.clearLocalStorage();
     this.set('length', this.getSelectionLength());
 }
 
@@ -170,10 +170,6 @@ PathEditor.prototype.deletePoint = function () {
         path.pop();
         this.marker.setPosition(path.getAt(len-2));
     }
-    if(localStorage) {
-	localStorage
-
-    }
     this.storeInLocalStorage();
     this.set('length', this.getSelectionLength());
 }
@@ -198,18 +194,17 @@ PathEditor.prototype.getSelectionLength = function (){
 }
 
 PathEditor.prototype.storeInLocalStorage = function (){
-    if (localStorage) {
-
-	if (this.selection) {
-	    console.log('store');
-	    localStorage['editingPath'] = google.maps.geometry.encoding.encodePath(this.selection.getPath());
-	}
-	else {
-	    console.log('delete');
-            delete localStorage['editingPath'];
-	}
+    if (localStorage && this.selection) {
+	console.log('store');
+	localStorage['editingPath'] = google.maps.geometry.encoding.encodePath(this.selection.getPath());
     }
+}
 
+PathEditor.prototype.clearLocalStorage = function (){
+    if (localStorage) {
+	console.log('delete');
+        delete localStorage['editingPath'];
+    }
 }
 
 PathEditor.prototype.loadFromLocalStorage = function (){
