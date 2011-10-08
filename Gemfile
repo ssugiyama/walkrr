@@ -11,6 +11,7 @@ gem 'pg'
 gem 'will_paginate'
 gem 'GeoRuby'
 gem 'spatial_adapter'
+gem 'settingslogic'
 # Use unicorn as the web server
 # gem 'unicorn'
 

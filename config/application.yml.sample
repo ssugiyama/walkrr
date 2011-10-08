@@ -1,0 +1,16 @@
+defaults: &defaults
+  atom:
+    title: walkrr
+    id: tag:example.net,YYYY:/walkrr
+
+development:
+  <<: *defaults
+  domain: http://example.net/walkrr
+
+test:
+  <<: *defaults
+  domain: http://example.net/walkrr
+
+production:
+  <<: *defaults
+  domain: http://example.net/walkrr

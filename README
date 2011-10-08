@@ -11,10 +11,13 @@
  % psql walkdb -f lwpostgis.sql
  % psql walkdb -f spatial_ref_sys.sql
 
-2. setup database.yml
+2. setup database.yml and application.yml
 
  % cp config/database.yml.sample config/database.yml
  % vi config/database.yml
+...
+ % cp config/application.yml.sample config/application.yml
+ % vi config/application.yml
 ...
 
 3. Bundler setup

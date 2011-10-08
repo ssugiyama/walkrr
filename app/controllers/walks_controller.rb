@@ -17,6 +17,15 @@ class WalksController < ApplicationController
     end
   end
 
+  def atom
+    @walks = Walk.order('id desc').limit(15)
+    @atom_title = 'walkrr chez sugi'
+    @atom_id = 'tag:chez-sugi.net,1997:walkrr'
+    headers["Content-Type"] = "application/atom+xml";
+    render :template => 'walks/atom.xml.erb'
+
+  end
+
   def add_area
     latitude = params[:latitude].to_f
     longitude = params[:longitude].to_f
@@ -107,8 +116,8 @@ class WalksController < ApplicationController
     @walks = Walk.find(params[:id])
     case format
       when "kml"
-      headers["Content-Type"] = "application/vnd.google-earth.kml+xml";
-      headers["Content-Disposition"] = "attachment; filename=walks.kml";
+      headers["Content-Type"] = "application/vnd.google-earth.kml+xml"
+      headers["Content-Disposition"] = "attachment; filename=walks.kml"
       render :template => 'walks/export_kml.xml.erb'
     end
   end

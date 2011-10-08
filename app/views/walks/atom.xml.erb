@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+    <title><%= Settings.atom.title %></title>
+    <link rel="alternate" type="text/html" href="<%= Settings.domain + url_for(:action => :index) %>" />
+    <link rel="self" type="application/atom+xml" href="<%= Settings.domain + url_for(:action => :atom) %>" />
+    <id><%= Settings.atom.id %></id>
+    <updated><%= @walks[0].updated_at.iso8601 %></updated>
+    <generator uri="https://github.com/chez-sugi/walkrr">walkrr</generator>
+<% @walks.each do |walk| %>
+<entry>
+    <title><%= walk.date  %></title>
+    <link rel="alternate" type="text/html" href="<%= Settings.domain + url_for(:action => :index, :id => walk.id)  %>" />
+    <id><%= Settings.atom.id + '/' + walk.id.to_s %></id>
+    <published><%= walk.created_at.iso8601 %></published>
+    <updated><%= walk.updated_at.iso8601 %></updated>
+
+    <summary><%= walk.start  %> - <%= walk.end %> (<%= sprintf("%.1f", walk.length) %>km)</summary>
+</entry>
+<% end %>
+</feed>
