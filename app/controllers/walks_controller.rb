@@ -10,11 +10,14 @@ class WalksController < ApplicationController
     @year_opts = [''] + (year_range['min'].to_i .. year_range['max'].to_i).to_a.reverse
     @month_opts = [''] + (1 .. 12).to_a
     id = params[:id]
-    unless id.blank?
+    date = params[:date]
+    if !id.blank?
       walk = Walk.find(id)
       @walks = [walk]
-      @default_path = walk.path.as_encoded_path
+    elsif !date.blank?
+      @walks = Walk.where(:date => date)
     end
+    @default_path = @walks[0].path.as_encoded_path if @walks && @walks.length > 0
   end
 
   def atom
