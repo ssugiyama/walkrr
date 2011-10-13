@@ -2,7 +2,10 @@ defaults: &defaults
   atom:
     title: walkrr
     id: tag:example.net,YYYY:/walkrr
-
+    author:
+      name: foo bar
+      email: foo@example.net
+      uri: http://example.net/~foo/
 development:
   <<: *defaults
   domain: http://example.net/walkrr
