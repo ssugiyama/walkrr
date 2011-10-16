@@ -1,0 +1,7 @@
+<% if @walk %>
+  $('#id').val("<%= @walk.id %>");
+  $('#date').val("<%= @walk.date %>");
+  $('#start').val("<%= @walk.start %>");
+  $('#end').val("<%= @walk.end %>");
+  alert('saved successfully!');
+<% end %>
