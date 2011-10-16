@@ -96,7 +96,7 @@
           </div>
 
           <%= hidden_field_tag 'save_path'  %>
-          <%= submit_tag "save", {:disable_with => "wait...", :onclick => "$('#admin_form').attr('action', '#{url_for(:action => :save)}';"} %>
+          <%= submit_tag "save", {:disable_with => "wait...", :onclick => "$('#admin_form').attr('action', '#{url_for(:action => :save)}');"} %>
           <%= submit_tag "delete", {:disable_with => "wait...", :confirm => "Are you sure to delete?", :onclick => "$('#admin_form').attr('action', '#{url_for(:action => :destroy)}');"} %>
           <%= button_to_function "reset", "this.form.reset();", {}%>
         <% end %>

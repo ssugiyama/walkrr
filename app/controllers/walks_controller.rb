@@ -99,6 +99,7 @@ class WalksController < ApplicationController
       #temporary hack for https://github.com/fragility/spatial_adapter/issues/26
       @walk = Walk.create(:date => params[:date], :start => params[:start], :end => params[:end])
       @walk.path = path
+#      @walk = Walk.new(:date => params[:date], :start => params[:start], :end => params[:end], :path => path)
     else
       @walk = Walk.find(params[:id])      
       @walk.date = params[:date]
