@@ -22,6 +22,7 @@
     <input type="hidden" id="add_area_url" value="<%= url_for(:action => :add_area) %>" />
     <div id="top">
       <span class="section_title">Path:</span>
+        <%= button_to_function "edit/done", "walk.pathEditor.toggleEditable();" %>
         <%= button_to_function "delete", "walk.pathEditor.deletePath();" %>
         <%= button_to_function "clear", "walk.pathEditor.deleteAll();" %>
         <%= button_to_function "elevation", "walk.requestElevation();" %>

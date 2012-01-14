@@ -42,6 +42,13 @@ function PathEditor(opt_options) {
 
 PathEditor.prototype = new google.maps.MVCObject();
 
+PathEditor.prototype.toggleEditable = function (){
+    if(this.selection != null){
+	var editable  = this.selection.getEditable();
+        this.selection.setEditable(!editable);
+    }
+};
+
 PathEditor.prototype.deletePath = function (){
     if(this.selection != null){
         this.selection.setMap(null);
@@ -115,7 +122,6 @@ PathEditor.prototype.selection_changed = function (){
 
     if (selection) {
         selection.setOptions(this.selectedStyle);
-	selection.setEditable(true);
         var path = this.selection.getPath();
 
         var len = path.getLength();
