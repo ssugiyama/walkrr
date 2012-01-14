@@ -34,6 +34,7 @@ var Walkrr = function (){
     this.earthRadius = 6370986;
     this.areas = [];
     this.map = map;
+
     this.panorama = new google.maps.StreetViewPanorama(document.getElementById("panorama"), {addressControl: true, navigationControl: true});
 //    this.panorama.setOptions({});
     this.streetViewService = new google.maps.StreetViewService();
@@ -41,12 +42,12 @@ var Walkrr = function (){
     this.panorama.setVisible(true);
     this.panoramaIndex = 0;
     this.panoramaInterval = 100;
-    this.distanceWidget = new DistanceWidget({
+    this.distanceWidget = new google.maps.Circle({
+	strokeWeight: 2,
+	editable: true,
         color: '#000',
-        activeColor: '#59b',
-        sizerIcon: new google.maps.MarkerImage('./images/resize-off.png'),
-        activeSizerIcon: new google.maps.MarkerImage('./images/resize.png'),
-        position: defaultPos
+        center: defaultPos,
+	radius: 500,
     });
     this.loadCenterAndZoom();
     this.pathEditor = new PathEditor({map: map});
@@ -103,7 +104,7 @@ var Walkrr = function (){
     $("#tabs").tabs();
     google.maps.event.addListener(this.map, 'click', function (event) {
         if($("#condition_neighbor").attr("checked")){
-            self.distanceWidget.set('position', event.latLng);
+            self.distanceWidget.setCenter(event.latLng);
         }
         else if($("#condition_areas").attr("checked")) {
 	    var addAreaUrl = $('#add_area_url').val();
@@ -126,10 +127,10 @@ var Walkrr = function (){
     $("#conditionBox input").change(function (){
        
         if($("#condition_neighbor").attr("checked")){
-            self.distanceWidget.set('map', self.map);
+            self.distanceWidget.setMap(self.map);
         }
         else {
-            self.distanceWidget.set('map', null);
+            self.distanceWidget.setMap(null);
         }
         var showAreas = $("#condition_areas").attr("checked");
         for (var id in self.areas) {
@@ -166,16 +167,16 @@ Walkrr.prototype = {
         });
         $("#conditionBox input").change();
         this.areas = [];
-        this.distanceWidget.set('distance', this.defaultRadius);
-        this.distanceWidget.set('position', this.map.getCenter());
+        this.distanceWidget.setRadius(this.defaultRadius);
+        this.distanceWidget.setCenter(this.map.getCenter());
    
     },
     preSearch : function (){
         if($("#condition_neighbor").attr("checked")){
-            var pt = this.distanceWidget.get('position');
+            var pt = this.distanceWidget.getCenter();
             $("#latitude").val(pt.lat());
             $("#longitude").val(pt.lng());
-            var radius = this.distanceWidget.get('distance');
+            var radius = this.distanceWidget.getRadius();
             $("#radius").val(radius);
         }
         else if ($("#condition_cross").attr("checked")){

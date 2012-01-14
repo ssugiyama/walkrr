@@ -12,38 +12,29 @@ function PathEditor(opt_options) {
 
     this.generalStyle = {strokeColor : "#0000ff", strokeOpacity: 0.5, zIndex: 10};
     this.selectedStyle = {strokeColor : "#ff0000", strokeOpacity : 0.7, zIndex: 10};
+
+    this.drawingManager = new google.maps.drawing.DrawingManager({
+	drawingMode: google.maps.drawing.OverlayType.POLYLINE,
+	drawingControl: true,
+	drawingControlOptions: {
+	    position: google.maps.ControlPosition.TOP_CENTER,
+	    drawingModes: [google.maps.drawing.OverlayType.POLYLINE]
+	},
+	polylineOptions: this.selectedStyle
+    });
+    this.drawingManager.setDrawingMode(null);
+    this.drawingManager.setMap(this.map);
     
-    if (!this.get('preEditMarkerIcon')) this.set('preEditMarkerIcon', 'http://maps.google.co.jp/mapfiles/ms/icons/blue-dot.png');
-    if (!this.get('editingMarkerIcon')) this.set('editingMarkerIcon', 'http://maps.google.co.jp/mapfiles/ms/icons/red-dot.png');
-    this.marker = new google.maps.Marker({draggable : true});
-    
+   
 //    this.set('selection', null);
     this.set('length', 0);
     this.set('prevSelection', null);
     var self = this;
-    google.maps.event.addListener(this.marker, 'rightclick', function () {
-        self.deletePoint();
-    });
-    google.maps.event.addListener(this.marker, 'click', function () {
-        if(self.selection) {
-   //         self.set('selection', null);
-        }
-        else {
-            var pl = new google.maps.Polyline({});
-            pl.setPath([this.getPosition()]);
-            self.addPolyline(pl);
-            self.set('selection', pl);
-        }
-    });
-    google.maps.event.addListener(this.marker, 'dragstart', function (event) {
-        if(self.selection) self.addPoint(event);
-    });
-    google.maps.event.addListener(this.marker, 'drag', function (event) {
-        if(self.selection) self.movePoint(event);
-    });
-    google.maps.event.addListener(this.marker, 'dragend', function () {
-        if(self.selection) self.set('length', self.getSelectionLength());
-	self.storeInLocalStorage();
+    
+    google.maps.event.addListener(this.drawingManager, 'polylinecomplete', function(polyline) {
+	self.addPolyline(polyline);
+	self.set('selection', polyline);
+	self.drawingManager.setDrawingMode(null);
     });
    
     
@@ -117,62 +108,25 @@ PathEditor.prototype.selection_changed = function (){
     var prevSelection = this.get('prevSelection');
     if (prevSelection){
         prevSelection.setOptions(this.generalStyle);
+	prevSelection.setEditable(false);
     }
     var selection = this.get('selection');
     this.set('prevSelection', selection);
 
     if (selection) {
         selection.setOptions(this.selectedStyle);
+	selection.setEditable(true);
         var path = this.selection.getPath();
 
         var len = path.getLength();
-        if(len > 0) {
-            this.marker.setPosition(path.getAt(len-1));
-        }
-        this.marker.setIcon(this.editMarkerIcon);
-        this.marker.setMap(this.map);
     }
-    else{
-        this.marker.setIcon(this.preEditMarkerIcon);
-        this.marker.setMap(null);
-    }
+
     this.clearLocalStorage();
     this.set('length', this.getSelectionLength());
 }
 
-PathEditor.prototype.newPath = function () {
-    var position = this.map.getCenter();
-    this.set('selection', null);
-    this.marker.setMap(this.map);
-    this.marker.setPosition(position);
-}
-PathEditor.prototype.addPoint =  function (event) {
-    if (! this.selection) return;
-    var path = this.selection.getPath();
-    path.push(event.latLng);
-}
-PathEditor.prototype.movePoint = function (event) {
 
-    if (this.selection) {
-        var path = this.selection.getPath();
-        path.pop();
-        path.push(event.latLng);
-        return;
-    }
- 
 
-}
-PathEditor.prototype.deletePoint = function () {
-    if (! this.selection) return;
-    var path = this.selection.getPath();
-    var len = path.getLength();
-    if(len > 1) {
-        path.pop();
-        this.marker.setPosition(path.getAt(len-2));
-    }
-    this.storeInLocalStorage();
-    this.set('length', this.getSelectionLength());
-}
 
 PathEditor.prototype.getSelectionLength = function (){
     
