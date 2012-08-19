@@ -110,6 +110,12 @@ PathEditor.prototype.addPolyline = function (pl){
     google.maps.event.addListener(pl, 'click', function () {
         self.set('selection', pl);
     });
+    var deleteNode = function(mev) {
+	if (mev.vertex != null) {
+	    pl.getPath().removeAt(mev.vertex);
+	}
+    }
+    google.maps.event.addListener(pl, 'rightclick', deleteNode);
 }
 PathEditor.prototype.selection_changed = function (){
     var prevSelection = this.get('prevSelection');
