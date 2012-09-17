@@ -1,3 +1,0 @@
-$("#pagination").html("<%= escape_javascript(will_paginate(@items, :previous_label => '&laquo; ', :next_label => '&raquo;', :inner_window => 1, :outer_window => 0)) %>");
-$("#tbody").html("<%= escape_javascript(render(:partial => 'walk_row', :collection => @items)) %>");
-$("#message").html("<%= escape_javascript(@message) %>");

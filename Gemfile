@@ -1,17 +1,21 @@
 source 'http://rubygems.org'
 
-gem 'rails', '3.1.1'
+gem 'rails', '>= 3.2'
 
 # Bundle edge Rails instead:
 # gem 'rails', :git => 'git://github.com/rails/rails.git'
 
-gem 'rake', '0.8.7'
+gem 'rake'
 gem 'sqlite3-ruby', :require => 'sqlite3'
 gem 'pg'
-gem 'will_paginate'
+gem 'kaminari'
 gem 'GeoRuby'
 gem 'spatial_adapter'
 gem 'settingslogic'
+gem 'jquery-rails'
+gem 'angularjs-rails'
+gem 'twitter-bootstrap-rails'
+gem 'unicorn'
 # Use unicorn as the web server
 # gem 'unicorn'
 

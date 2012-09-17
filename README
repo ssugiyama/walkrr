@@ -1,13 +1,8 @@
 0. prerequisite
-  ruby 1.9.2 (or 1.8.7)
-  rubygems
+  ruby 1.9.3
   postgresql
   postgis 1.5 or higher
 
-0. install bundler
-
- % gem install bundler
-  
 1. create database and install postgis functions.
 
  % createdb walkdb -E utf8
@@ -27,7 +22,11 @@
 3. Bundler setup
  % vi Gemfile
 ...
- % bundle install
+ % bundle
+
+4. install bootstrap files
+
+ % rails g bootstrap:install 
 
 4. migrate db schemas
  % rake db:migrate
@@ -42,6 +41,4 @@
 
  % ./script/rails s
 
- or run with passenger, mongrel2 like general rails apps. 
-
- demo: http://chez-sugi.net/walkrr
+ demo: http://walk.chez-sugi.net/

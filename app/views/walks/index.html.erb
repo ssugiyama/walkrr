@@ -1,133 +1,161 @@
 <!DOCTYPE html>
 
-<html>
+<html ng-app="walkApp">
   <head>
     <meta charset="utf-8" />
     <%= csrf_meta_tag %>
-    <title>Walkrr</title>
+    <title>Walkrr(dev)</title>
     <link rel="alternate" title="Recent Entries" type="application/atom+xml" href="<%= Settings.domain + url_for(:action => :atom) %>" />
-    <link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/themes/base/jquery-ui.css" rel="stylesheet" />
+    <link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.23/themes/base/jquery-ui.css" rel="stylesheet" />
     <%= stylesheet_link_tag 'application' %>
     
     <script src="http://www.google.com/jsapi"></script> 
     <script src="http://maps.google.com/maps/api/js?sensor=true&libraries=geometry,drawing"></script>
-    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
-    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js"></script>
-    <%= javascript_include_tag :all, :cache => true %>      
+    <%= javascript_include_tag "application" %>
+
 
   </head>
-  <body>
-    <input type="hidden" id="default_path" value="<%= @default_path %>" />
-    <input type="hidden" id="add_area_url" value="<%= url_for(:action => :add_area) %>" />
-    <div id="top">
-      <span class="section_title">Path:</span>
-        <%= button_to_function "edit/done", "walk.pathEditor.toggleEditable();" %>
-        <%= button_to_function "delete", "walk.pathEditor.deletePath();" %>
-        <%= button_to_function "clear", "walk.pathEditor.deleteAll();" %>
-        <%= button_to_function "elevation", "walk.requestElevation();" %>
-        <%= button_to_function "street view", "walk.showPanorama();" %>
-        <%= form_tag({:action => "import"}, {:id => "import_form", :multipart => true, :target => "import_frame", :style => "display: inline;"}) do %>
+  <body ng-controller="WalkController">
+    <div class="navbar" id="nav">
+      <div class="navbar-inner">
+	<a class="brand" href="https://github.com/chez-sugi/walkrr">Walkrr</a>
+	<form class="navbar-form pull-left">
+	  <label class="navbar-text"><input type="checkbox" ng-model="editable" />editable</label>
+	</form>
+	<ul class="nav">
+	  <li><a ng-click="deletePath()"  href="#">delete</a></li>
+	  <li><a ng-click="deleteAll()" href="#">clear</a></li>
+	  <li><a ng-click="showElevation()" href="#">elevation</a></li>
+          <li><a ng-click="showPanorama()" href="#">street view</a></li>
+<!--	
+		  <%= form_tag({:action => "import"}, {:id => "import_form", :multipart => true, :target => "import_frame", :style => "display: inline;"}) do %>
           <%= file_field_tag "file" %>
           <%= button_to_function "import", "walk.importFile();"%>
-        <% end %>
-        <span id="editing_label">Now editing...<span id="length">0</span>m</span>
-	<div id="powered_by">Powered by <a href="https://github.com/chez-sugi/walkrr">walkrr</a></div>
-      <iframe id="import_frame" name="import_frame" style="display: none;"></iframe>
-          
-          
-    </div>
-    <div id="left">
-      <div id="tabs">
-        <ul>
-          <li><a href="#search_form">search</a></li>
-          <li><a href="#admin_form">admin</a></li>
-        </ul>
-        <%= form_tag({:action => 'search'}, {:id => 'search_form', :remote => true, :method => 'GET'}) do  %>
-          <%= hidden_field_tag "latitude" %>
-          <%= hidden_field_tag "longitude" %>
-          <%= hidden_field_tag "radius" %>
-          <%= hidden_field_tag "areas" %>
-          <%= hidden_field_tag 'search_path' %>
-          <div id="conditionBox">
-            <%= radio_button_tag :condition, "neighbor"%><label for="condition_neighbor">neighbor</label>
-            <%= radio_button_tag :condition, "areas"%><label for="condition_areas">areas</label>
-            <%= radio_button_tag :condition, "cross"%><label for="condition_cross">cross</label>
-            <%= radio_button_tag :condition, "all", "checked"%><label for="condition_all">all</label>
-          </div>
-    <%#      <div id="areasBox">
-            <label for="areas">areas</label>
-            <%= select_tag "areas", options_for_select(@areas), {:multiple => true, :size =>5, :name => 'areas[]'} >
-          </div> %>
-          <div>
-            <label >date</label>
-            <%= select_tag "year",
-              options_for_select(@year_opts)%> /
-            <%= select_tag "month",
-              options_for_select(@month_opts)%>
-          </div>
-          <div>
-            <label for="order">order</label>
-            <%= select_tag "order",
-              options_for_select([["new first","date desc"], ["old first","date"],
-                ["long first","length desc"], ["short first","length"],
-                ["east first","xmax(PATH) desc"], ["west first","xmin(PATH)"],
-                ["south first","ymin(PATH)"],["north first","ymax(PATH) desc"]])%>
-          </div>
-          <div>
-            <label for="per_page">per page</label><%= text_field_tag "per_page","20" %>
-          </div>
-          <%= submit_tag "search", :disable_with => "searching" %>
-          <%= button_to_function 'reset', 'walk.resetSearch()' %>
-        <% end %>
-        <%= form_tag({:action => 'save'}, {:id => 'admin_form', :remote => true }) do  %>
-          <div><label for="id">id</label>
-          <%= text_field_tag 'id', '', {:readonly => 'readonly', :class => 'readonly'} %></div>
-          <div><label for="date">date</label>
-          <%= text_field_tag 'date' %></div>
-          <div>
-            <label for="start">start</label>
-            <%= text_field_tag 'start'  %>
-          </div>
-
-          <div>
-            <label for="end">end</label>
-            <%= text_field_tag 'end'  %>
-          </div>
-
-          <%= hidden_field_tag 'save_path'  %>
-          <%= submit_tag "save", {:disable_with => "wait...", :onclick => "$('#admin_form').attr('action', '#{url_for(:action => :save)}');"} %>
-          <%= submit_tag "delete", {:disable_with => "wait...", :confirm => "Are you sure to delete?", :onclick => "$('#admin_form').attr('action', '#{url_for(:action => :destroy)}');"} %>
-          <%= button_to_function "reset", "this.form.reset();", {}%>
-        <% end %>
+          <% end %>
+-->
+	</ul>
+        <p class="navbar-text">Length: <span id="length">{{selectionLength | number:2}}</span>km</p>
       </div>
- 
-      <div id="message"></div>
-      <%= form_tag("", {:id => "results_form"}) do %>
-        <div>
-          <%= button_to_function "check all", "$('input[type=checkbox]').attr('checked', true);", {}%>
-          <%= button_to_function "reset", "$('input[type=checkbox]').attr('checked', false);", {}%>
-          <%= submit_tag "show", {:onclick => "$('#results_form').attr('action', '#{url_for(:action => :show)}');$('#results_form').attr('data-remote', true);"} %>
-          <%= submit_tag "export", {:onclick => "$('#results_form').attr('action', '#{url_for(:action => :export)}');$('#results_form').removeAttr('data-remote');"} %>
-        </div>
-            
-        <table>
-          <tbody id="tbody">
-	    <%= render(:partial => 'walk_row', :collection => @walks)  %>
-          </tbody>
-        </table>
-            
-      <% end %>
-      <div id="pagination"></div>
     </div>
-    <div id="map"></div>
-   
-    <div id="elevation_chart"></div>
-    <div id="panorama_box">
-      <div id="panorama"></div>
-      <div id="panorama_control"><%= button_to_function "◀◀", "walk.backwardPanorama();" %><%= button_to_function "◀", "walk.prevPanorama();" %><span id="panorama_index_count"></span><%= button_to_function "▶", "walk.nextPanorama();" %><%= button_to_function "▶▶", "walk.forwardPanorama();" %></div>
+    <div id="side">
+      <ul class="nav nav-tabs">
+        <li  class="active"><a href="#search_form" data-toggle="tab">search</a></li>
+        <li><a href="#admin_form" data-toggle="tab">admin</a></li>
+      </ul>
+      <div class="tab-content">
+	<form id="search_form" class="form-horizontal tab-pane active">
+	  <input type="hidden" name="latitude" value="{{searchForm.latitude}}" />
+	  <input type="hidden" name="longitude" value="{{searchForm.longitude}}" />
+	  <input type="hidden" name="radius" value="{{searchForm.radius}}" />
+	  <input type="hidden" name="areas" value="{{searchForm.areas}}"  />
+	  <input type="hidden" name="search_path" value="{{searchForm.searchPath}}"  />
+          <div id="typeBox" class="control-group">
+	    <label class="checkbox inline">
+	      <input type="radio" name="type" ng-model="searchForm.type" value="neighbor" id="type_neighbor" /> neighbor</label>
+	    <label class="checkbox inline">
+	      <input type="radio" name="type" ng-model="searchForm.type" value="areas" id="type_areas" /> areas</label>
+	    <label class="checkbox inline">
+	      <input type="radio" name="type" ng-model="searchForm.type" value="cross" id="type_cross" /> cross</label>
+	    <label class="checkbox inline">
+	      <input type="radio" name="type" ng-model="searchForm.type" value="all" id="type_all" checked /> all</label>
+          </div>
+          <div class="control-group">
+            <label class="control-label" for="order">order</label>
+	    <div class="controls">
+	      <select ng-model="searchForm.order" class="span2">
+		<option value="new_first">new first</option>
+		<option value="old_first">old first</option>
+		<option value="long_first">long first</option>
+		<option value="short_first">short first</option>
+		<option value="east_first">east first</option>
+		<option value="west_first">west first</option>
+		<option value="south_first">south first</option>
+		<option value="north_first">north first</option>
+	      </select>
+	    </div>
+	  </div>
+	  <div class="control-group">
+	    <label class="control-label" for="per_page">per page</label>
+	    <div class="controls">
+	      <input type="text" ng-model="searchForm.per_page"  class="span2" />
+	    </div>
+	  </div>
+	  <div  class="form-actions">
+	    <button ng-click="search()" class="btn btn-primary"><i class="icon-search"></i>search</button>
+	    <input type="reset" value="reset" class="btn" />
+	  </div>
+	</form>
+	<form id='admin_form' ng-sbmit="save()" class="form-horizontal tab-pane">
+          <div class="control-group"><label  class="control-label" for="id">id</label>
+	    <div class="controls">
+	      <input type="text" readonly="readonly" ng-model="selection.id" class="span2" />
+	    </div>
+	  </div>
+          <div class="control-group"><label class="control-label" for="date">date</label>
+	    <div class="controls">
+	      <input type="date" name="date" ng-model="selection.date" class="span2"  />
+	    </div>
+	  </div>
+          <div class="control-group">
+            <label class="control-label" for="start">start</label>
+	    <div class="controls">
+	      <input type="text" name="start" ng-model="selection.start" class="span2" />
+	    </div>
+          </div>
+	  
+          <div class="control-group">
+            <label class="control-label" for="end">end</label>
+	    <div class="controls">
+	      <input type="text" name="end" ng-model="selection.end" class="span2"  />
+	    </div>
+          </div>
+	  <input type="hidden" name="save_path" ng-mode="selection.path"  />
+	  <div  class="form-actions">
+	    <button ng-click="save()" class="btn btn-primary">save</button>
+	    <button ng-click="destroy()" class="btn btn-danger">delete</button>
+	    <input type="reset" value="reset"  class="btn" />
+	  </div>
+	</form>
+      </div>
+	
+      <p id="message" class="well well-small"><strong>{{searchMessage}}</strong></p>
+<div class="table-wrapper">
+      <table class="table table-condensed table-striped">
+        <tbody id="tbody">
+	  <tr ng-repeat="item in walks">
+	    <td><a href="javascript:void(0)" ng-click="showPath(item.id)" class="icon-play"></a>
+</td>
+	    <td class="date">{{item.date}}</td>
+	    <td class="name"><div>{{item.start}}</div></td><td class="name"><div>{{item.end}}</div></td><td class="way">{{item.length | number:1  }}</td>
+	    <td>
+	      <a href="javascript:void(0)" ng-click="download(item.id)" class="icon-download"></a>
+	    </td>
+	  </tr>
+	  
+        </tbody>
+      </table>
+</div>
+      
+      <div id="pagination" ng-bind-html-unsafe="paginate"></div>
     </div>
-        
+    <div id="main">
+      <div my-map id="map" ng-class="mapClass"></div>
+      
+      <div id="elevation-box" ng-show="currentService == 'elevation'">
+	<div my-elevation></div>
+	<button class="close" ng-click="closeService()">&times;</button>
+      </div>
+      <div id="panorama-box" ng-show="currentService == 'panorama'">
+	<div id="panorama" my-panorama></div>
+	<div id="panorama_control">
+	  <button class="btn icon-fast-backward" ng-click="backwardPanorama()"></button>
+	  <button class="btn icon-step-backward" ng-click="prevPanorama()"></button>
+	  <div><span>{{panoramaIndex}}</span> / <span>{{panoramaCount}}</span></div>
+	  <button class="btn icon-step-forward" ng-click="nextPanorama()"></button>
+	  <button class="btn icon-fast-forward" ng-click="forwardPanorama()"></button>
+	</div>
+      </div>
+    </div>
   </body>
 </html>
     

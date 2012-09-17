@@ -1,6 +1,6 @@
 class WalksController < ApplicationController
   include GeoRuby::SimpleFeatures
-
+  include Kaminari::ActionViewExtension
   XMPS_SRID = 4301
   EARTH_RADIUS = 6370986
   DEFAULT_SRID = 4326
@@ -9,15 +9,6 @@ class WalksController < ApplicationController
     year_range = ActiveRecord::Base.connection.select_one("select extract(year from min(date)) as min, extract(year from max(date)) as max from walks")
     @year_opts = [''] + (year_range['min'].to_i .. year_range['max'].to_i).to_a.reverse
     @month_opts = [''] + (1 .. 12).to_a
-    id = params[:id]
-    date = params[:date]
-    if !id.blank?
-      walk = Walk.find(id)
-      @walks = [walk]
-    elsif !date.blank?
-      @walks = Walk.where(:date => date)
-    end
-    @default_path = @walks[0].path.as_encoded_path if @walks && @walks.length > 0
   end
 
   def atom
@@ -33,50 +24,92 @@ class WalksController < ApplicationController
     latitude = params[:latitude].to_f
     longitude = params[:longitude].to_f
     point = Point.from_x_y(longitude, latitude, DEFAULT_SRID)
-    @area = Area.find(:first, :conditions => ["st_contains(the_geom, :point)", {:point => point}])
+    area = Area.find(:first, :conditions => ["st_contains(the_geom, :point)", {:point => point}])
+
+    respond_to do |format|
+      format.json {render :json => {:jcode => area.jcode, :the_geom => area.the_geom.as_encoded_paths}}
+    end
+
   end
 
   def search
+    id = params[:id]
+    date = params[:date]
     radius = params[:radius]
     latitude = params[:latitude]
     longitude = params[:longitude]
     year = params[:year]
     month = params[:month]
+    page = params[:page] || 0
+    per_page = params[:per_page] || 20
+    order_hash = {
+      "new_first" => "date desc",
+      "old_first" => "date",
+      "long_first" => "length desc",
+      "short_first" => "length",
+      "east_first" => "xmax(PATH) desc",
+      "west_first" => "xmin(PATH)",
+      "south_first" => "ymin(PATH)",
+      "north_first" => "ymax(PATH) desc"
+    }
+    conditions = nil
+    order = order_hash[params[:order]] || "date desc"
     sqls = []
     values = {}
-    unless year.empty?
+    unless year.blank?
       sqls << 'extract(year from date) = :year'
       values[:year] = year
     end
-    unless month.empty?
+    unless month.blank?
       sqls << 'extract(month from date) = :month'
       values[:month] = month
     end
-    case params[:condition]
-    when "neighbor"
-      point = Point.from_x_y(longitude.to_f, latitude.to_f, DEFAULT_SRID)
-#      sqls << "st_dwithin(transform(path, :srid), transform(:point, :srid), :distance)"
-      dlat = radius.to_f / DEG_TO_RAD / EARTH_RADIUS
-      dlon = dlat / Math.cos(latitude.to_f * DEG_TO_RAD)
-      pll = Point.from_x_y(longitude.to_f-dlon, latitude.to_f-dlat, DEFAULT_SRID)
-      pur = Point.from_x_y(longitude.to_f+dlon, latitude.to_f+dlat, DEFAULT_SRID)
-      sqls << "st_makebox2d(:pll, :pur) && path and st_distance_sphere(path, :point) <= :radius"
-      values.merge!({:radius => radius.to_f, :point => point,
-        :pll => pll, :pur => pur
-      })
-    when "areas"
-      sqls << "id in (select distinct id from walks inner join areas on jcode in (:areas) where path && the_geom and intersects(path, the_geom))"
-      values.merge!({:areas =>params[:areas].split(/,/)})
-    when "cross"
-      path = LineString.from_encoded_path(params[:search_path], DEFAULT_SRID)
-      sqls << "path && :path and intersects(path, :path)"
-      values.merge!({:path => path})
-
+    if id 
+      conditions = {:id => id}
+    elsif date
+      conditions = {:date => date}
+    else
+      case params[:type]
+      when "neighbor"
+        point = Point.from_x_y(longitude.to_f, latitude.to_f, DEFAULT_SRID)
+        #      sqls << "st_dwithin(transform(path, :srid), transform(:point, :srid), :distance)"
+        dlat = radius.to_f / DEG_TO_RAD / EARTH_RADIUS
+        dlon = dlat / Math.cos(latitude.to_f * DEG_TO_RAD)
+        pll = Point.from_x_y(longitude.to_f-dlon, latitude.to_f-dlat, DEFAULT_SRID)
+        pur = Point.from_x_y(longitude.to_f+dlon, latitude.to_f+dlat, DEFAULT_SRID)
+        sqls << "st_makebox2d(:pll, :pur) && path and st_distance_sphere(path, :point) <= :radius"
+        values.merge!({:radius => radius.to_f, :point => point,
+                        :pll => pll, :pur => pur
+                      })
+      when "areas"
+        sqls << "id in (select distinct id from walks inner join areas on jcode in (:areas) where path && the_geom and intersects(path, the_geom))"
+        values.merge!({:areas =>params[:areas].split(/,/)})
+      when "cross"
+        path = LineString.from_encoded_path(params[:searchPath], DEFAULT_SRID)
+        sqls << "path && :path and intersects(path, :path)"
+        values.merge!({:path => path})
+      end
+      conditions = [sqls.join(' and '), values]
     end
-    conditions = [sqls.join(' and '), values]
-    @items = Walk.paginate :page => params[:page], :select => "walks.*",  :conditions => conditions, :order => params[:order], :per_page => params[:per_page].to_i
+    @walks = Walk.where(conditions)
+      .select(%w(id date start "end" length path))
+      .page(page).per(per_page)
+      .order(order)
     
-    @message = "Hit #{@items.total_entries} item(s)"
+    walk_hashs = nil
+    if @walks.total_count == 1
+      walks_hash = @walks.map{|w| w.to_hash_with_path}
+    else
+      walks_hash = @walks.map{|w| w.to_hash}
+    end
+    result = {
+      :items => walks_hash, 
+      :count => @walks.total_count,
+      :paginate => render_to_string(:partial => 'walks_pagination',  :formats => [:html] )
+    } 
+    respond_to do |format|
+      format.json {render :json => result.to_json}
+    end
   end
 
   # GETs should be safe (see http://www.w3.org/2001/tag/doc/whenToUseGet.html)
@@ -91,10 +124,16 @@ class WalksController < ApplicationController
       ids = [ids]
     end
     @walks = Walk.find(ids)
+    items = @walks.map do |item|
+      item.to_hash_with_path
+    end
+    respond_to do |format| 
+      format.json {render :json => items.to_json}
+    end
   end
 
   def save
-    path = LineString.from_encoded_path( params[:save_path], DEFAULT_SRID)
+    path = LineString.from_encoded_path( params[:path], DEFAULT_SRID)
     if params[:id].blank?
       #temporary hack for https://github.com/fragility/spatial_adapter/issues/26
       @walk = Walk.create(:date => params[:date], :start => params[:start], :end => params[:end])
@@ -108,6 +147,10 @@ class WalksController < ApplicationController
       @walk.path = path
     end
     @walk.save
+    respond_to do |format| 
+      format.json {render :json => @walk.to_json}
+    end
+  
   end
 
   def destroy
@@ -117,11 +160,17 @@ class WalksController < ApplicationController
   def export
     format = params[:format]
     format = "kml" unless format
-    @walks = Walk.find(params[:id])
+    ids = params[:id]
+    filename = 'walks'
+    unless ids.is_a? Array
+      ids = [ids]
+    end
+    filename = ids[0] if ids.length == 1
+    @walks = Walk.find(ids)
     case format
-      when "kml"
+    when "kml"
       headers["Content-Type"] = "application/vnd.google-earth.kml+xml"
-      headers["Content-Disposition"] = "attachment; filename=walks.kml"
+      headers["Content-Disposition"] = "attachment; filename=#{filename}.kml"
       render :template => 'walks/export_kml.xml.erb'
     end
   end
