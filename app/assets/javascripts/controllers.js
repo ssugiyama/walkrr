@@ -476,7 +476,9 @@
 		alert(data);
 	    });
 	};
-
+	$scope.resetAdminForm = function () {
+	    $scope.selection = {};
+	};
 	$scope.showElevation = function () {
 	    walkService.requestElevation();
 	    $scope.currentService = 'elevation';
