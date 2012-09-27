@@ -5,8 +5,7 @@
     <meta charset="utf-8" />
     <%= csrf_meta_tag %>
     <title>Walkrr(dev)</title>
-    <link rel="alternate" title="Recent Entries" type="application/atom+xml" href="<%= Settings.domain + url_for(:action => :atom) %>" />
-    <link href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.23/themes/base/jquery-ui.css" rel="stylesheet" />
+    <link rel="alternate" title="Recent Entries" type="application/atom+xml" href="<%= url_for(:action => :atom) %>" />
     <%= stylesheet_link_tag 'application' %>
     
     <script src="http://www.google.com/jsapi"></script> 
@@ -113,7 +112,7 @@
 	  <div  class="form-actions">
 	    <button ng-click="save()" class="btn btn-primary">save</button>
 	    <button ng-click="destroy()" class="btn btn-danger">delete</button>
-	    <input type="reset" value="reset"  class="btn" />
+	    <button ng-click="resetAdminForm()" class="btn">reset</button>
 	  </div>
 	</form>
       </div>
