@@ -4,4 +4,4 @@
 # If you change this key, all old signed cookies will become invalid!
 # Make sure the secret is at least 30 characters and all random,
 # no regular words or you'll be exposed to dictionary attacks.
-Walkrr::Application.config.secret_token = '125890bc344fac5a7987b49c72f89f78f1aea60f3f746239aa50f748463f7ceb6fde8a6b0b9a5d4f06945e35b12be9d175fb4158250d78dd2407a9356acf6c10'
+Walkrr::Application.config.secret_token = '97da8f5b985452473ee0e5be69b1bcb0bbe15a91e3c32ee4cb69621a9374a7d9468dba510c42e97f0b42e0da24be5de14dea855473bf535dabb675764d13e890'
