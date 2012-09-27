@@ -16,6 +16,7 @@ gem 'jquery-rails'
 gem 'angularjs-rails'
 gem 'twitter-bootstrap-rails'
 gem 'unicorn'
+gem 'uglifier'
 # Use unicorn as the web server
 # gem 'unicorn'
 
