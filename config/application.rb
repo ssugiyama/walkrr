@@ -9,6 +9,10 @@ if defined?(Bundler)
   # Bundler.require(:default, :assets, Rails.env)
 end
 
+require './lib/geometry_encode_util'
+require './lib/line_string_ext'
+require './lib/multi_polygon_ext'
+
 module Walkrr
   class Application < Rails::Application
     # Settings in config/environments/* take precedence over those specified here.
