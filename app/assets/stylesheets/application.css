@@ -116,7 +116,7 @@ td.name div {
 .table-wrapper {
     position: absolute;
     bottom : 80px;
-    top : 400px;
+    top : 350px;
     overflow: scroll;
     padding-right: 16px;
 }

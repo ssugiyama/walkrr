@@ -4,7 +4,7 @@
   <head>
     <meta charset="utf-8" />
     <%= csrf_meta_tag %>
-    <title>Walkrr(dev)</title>
+    <title>Walkrr</title>
     <link rel="alternate" title="Recent Entries" type="application/atom+xml" href="<%= url_for(:action => :atom) %>" />
     <%= stylesheet_link_tag 'application' %>
     
@@ -38,104 +38,108 @@
     </div>
     <div id="side">
       <ul class="nav nav-tabs">
-        <li  class="active"><a href="#search_form" data-toggle="tab">search</a></li>
-        <li><a href="#admin_form" data-toggle="tab">admin</a></li>
+        <li  class="active"><a href="#search_pane" data-toggle="tab">search</a></li>
+        <li><a href="#admin_pane" data-toggle="tab">admin</a></li>
       </ul>
       <div class="tab-content">
-	<form id="search_form" class="form-horizontal tab-pane active">
-	  <input type="hidden" name="latitude" value="{{searchForm.latitude}}" />
-	  <input type="hidden" name="longitude" value="{{searchForm.longitude}}" />
-	  <input type="hidden" name="radius" value="{{searchForm.radius}}" />
-	  <input type="hidden" name="areas" value="{{searchForm.areas}}"  />
-	  <input type="hidden" name="search_path" value="{{searchForm.searchPath}}"  />
-          <div id="typeBox" class="control-group">
-	    <label class="checkbox inline">
-	      <input type="radio" name="type" ng-model="searchForm.type" value="neighbor" id="type_neighbor" /> neighbor</label>
-	    <label class="checkbox inline">
-	      <input type="radio" name="type" ng-model="searchForm.type" value="areas" id="type_areas" /> areas</label>
-	    <label class="checkbox inline">
-	      <input type="radio" name="type" ng-model="searchForm.type" value="cross" id="type_cross" /> cross</label>
-	    <label class="checkbox inline">
-	      <input type="radio" name="type" ng-model="searchForm.type" value="all" id="type_all" checked /> all</label>
-          </div>
-          <div class="control-group">
-            <label class="control-label" for="order">order</label>
-	    <div class="controls">
-	      <select ng-model="searchForm.order" class="span2">
-		<option value="new_first">new first</option>
-		<option value="old_first">old first</option>
-		<option value="long_first">long first</option>
-		<option value="short_first">short first</option>
-		<option value="east_first">east first</option>
-		<option value="west_first">west first</option>
-		<option value="south_first">south first</option>
-		<option value="north_first">north first</option>
-	      </select>
+	<div id="search_pane" class="tab-pane active">
+	  <form class="form-horizontal">
+	    <input type="hidden" name="latitude" value="{{searchForm.latitude}}" />
+	    <input type="hidden" name="longitude" value="{{searchForm.longitude}}" />
+	    <input type="hidden" name="radius" value="{{searchForm.radius}}" />
+	    <input type="hidden" name="areas" value="{{searchForm.areas}}"  />
+	    <input type="hidden" name="search_path" value="{{searchForm.searchPath}}"  />
+            <div id="typeBox" class="control-group">
+	      <label class="checkbox inline">
+		<input type="radio" name="type" ng-model="searchForm.type" value="neighbor" id="type_neighbor" /> neighbor</label>
+	      <label class="checkbox inline">
+		<input type="radio" name="type" ng-model="searchForm.type" value="areas" id="type_areas" /> areas</label>
+	      <label class="checkbox inline">
+		<input type="radio" name="type" ng-model="searchForm.type" value="cross" id="type_cross" /> cross</label>
+	      <label class="checkbox inline">
+		<input type="radio" name="type" ng-model="searchForm.type" value="all" id="type_all" checked /> all</label>
+            </div>
+            <div class="control-group">
+              <label class="control-label" for="order">order</label>
+	      <div class="controls">
+		<select ng-model="searchForm.order" class="span2">
+		  <option value="new_first">new first</option>
+		  <option value="old_first">old first</option>
+		  <option value="long_first">long first</option>
+		  <option value="short_first">short first</option>
+		  <option value="east_first">east first</option>
+		  <option value="west_first">west first</option>
+		  <option value="south_first">south first</option>
+		  <option value="north_first">north first</option>
+		</select>
+	      </div>
 	    </div>
-	  </div>
-	  <div class="control-group">
-	    <label class="control-label" for="per_page">per page</label>
-	    <div class="controls">
-	      <input type="text" ng-model="searchForm.per_page"  class="span2" />
+	    <div class="control-group">
+	      <label class="control-label" for="per_page">per page</label>
+	      <div class="controls">
+		<input type="text" ng-model="searchForm.per_page"  class="span2" />
+	      </div>
 	    </div>
-	  </div>
-	  <div  class="form-actions">
-	    <button ng-click="search()" class="btn btn-primary"><i class="icon-search"></i>search</button>
-	    <input type="reset" value="reset" class="btn" />
-	  </div>
-	</form>
-	<form id='admin_form' ng-sbmit="save()" class="form-horizontal tab-pane">
-          <div class="control-group"><label  class="control-label" for="id">id</label>
-	    <div class="controls">
-	      <input type="text" readonly="readonly" ng-model="selection.id" class="span2" />
+	    <div  class="form-actions">
+	      <button ng-click="search()" class="btn btn-primary"><i class="icon-search"></i>search</button>
+	      <input type="reset" value="reset" class="btn" />
 	    </div>
+	  </form>
+	  <p id="message" class="well well-small"><strong>{{searchMessage}}</strong></p>
+	  <div class="table-wrapper">
+	    <table class="table table-condensed table-striped">
+              <tbody id="tbody">
+		<tr ng-repeat="item in walks">
+		  <td><a href="javascript:void(0)" ng-click="showPath(item.id)" class="icon-play"></a>
+		  </td>
+		  <td class="date">{{item.date}}</td>
+		  <td class="name"><div>{{item.start}}</div></td><td class="name"><div>{{item.end}}</div></td><td class="way">{{item.length | number:1  }}</td>
+		  <td>
+		    <a href="javascript:void(0)" ng-click="download(item.id)" class="icon-download"></a>
+		  </td>
+		</tr>
+		
+              </tbody>
+	    </table>
 	  </div>
-          <div class="control-group"><label class="control-label" for="date">date</label>
-	    <div class="controls">
-	      <input type="date" name="date" ng-model="selection.date" class="span2"  />
-	    </div>
-	  </div>
-          <div class="control-group">
-            <label class="control-label" for="start">start</label>
-	    <div class="controls">
-	      <input type="text" name="start" ng-model="selection.start" class="span2" />
-	    </div>
-          </div>
-	  
-          <div class="control-group">
-            <label class="control-label" for="end">end</label>
-	    <div class="controls">
-	      <input type="text" name="end" ng-model="selection.end" class="span2"  />
-	    </div>
-          </div>
-	  <input type="hidden" name="save_path" ng-mode="selection.path"  />
-	  <div  class="form-actions">
-	    <button ng-click="save()" class="btn btn-primary">save</button>
-	    <button ng-click="destroy()" class="btn btn-danger">delete</button>
-	    <button ng-click="resetAdminForm()" class="btn">reset</button>
-	  </div>
-	</form>
-      </div>
-	
-      <p id="message" class="well well-small"><strong>{{searchMessage}}</strong></p>
-<div class="table-wrapper">
-      <table class="table table-condensed table-striped">
-        <tbody id="tbody">
-	  <tr ng-repeat="item in walks">
-	    <td><a href="javascript:void(0)" ng-click="showPath(item.id)" class="icon-play"></a>
-</td>
-	    <td class="date">{{item.date}}</td>
-	    <td class="name"><div>{{item.start}}</div></td><td class="name"><div>{{item.end}}</div></td><td class="way">{{item.length | number:1  }}</td>
-	    <td>
-	      <a href="javascript:void(0)" ng-click="download(item.id)" class="icon-download"></a>
-	    </td>
-	  </tr>
-	  
-        </tbody>
-      </table>
-</div>
       
-      <div id="pagination" ng-bind-html-unsafe="paginate"></div>
+	  <div id="pagination" ng-bind-html-unsafe="paginate"></div>
+
+	</div>
+	<div class="tab-pane" id="admin_pane">
+	  <form ng-sbmit="save()" class="form-horizontal">
+            <div class="control-group"><label  class="control-label" for="id">id</label>
+	      <div class="controls">
+		<input type="text" readonly="readonly" ng-model="selection.id" class="span2" />
+	      </div>
+	    </div>
+            <div class="control-group"><label class="control-label" for="date">date</label>
+	      <div class="controls">
+		<input type="date" name="date" ng-model="selection.date" class="span2"  />
+	      </div>
+	    </div>
+            <div class="control-group">
+              <label class="control-label" for="start">start</label>
+	      <div class="controls">
+		<input type="text" name="start" ng-model="selection.start" class="span2" />
+	      </div>
+            </div>
+	  
+            <div class="control-group">
+              <label class="control-label" for="end">end</label>
+	      <div class="controls">
+		<input type="text" name="end" ng-model="selection.end" class="span2"  />
+	      </div>
+            </div>
+	    <input type="hidden" name="save_path" ng-mode="selection.path"  />
+	    <div  class="form-actions">
+	      <button ng-click="save()" class="btn btn-primary">save</button>
+	      <button ng-click="destroy()" class="btn btn-danger">delete</button>
+	      <button ng-click="resetAdminForm()" class="btn">reset</button>
+	    </div>
+	  </form>
+	</div>
+      </div>
     </div>
     <div id="main">
       <div my-map id="map" ng-class="mapClass"></div>
