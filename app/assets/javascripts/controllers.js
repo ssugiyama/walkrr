@@ -155,8 +155,8 @@
 			legend: 'none',
 			titleY: 'Elevation (m)',
 			pointSize : 0,
-			colors : ['#ff0000']
-			
+			colors : ['#ff0000'],
+			vAxis : { format: '#,###' },
 		    });
             
 		}
@@ -334,10 +334,15 @@
 //	$scope.selectionLength = 0;
 
 	function searchCallback (data) {
-	    $scope.walks = data.items;
+	    if (data.current_page > 1) {
+		$scope.walks.push.apply($scope.walks, data.items);
+	    }
+	    else {
+		$scope.walks = data.items;
+	    }
+	    $scope.params = data.params;
+	    $scope.searchMessage = data.total_count > 0 ? "Hit " + data.total_count + ' items' : 'No results';
 	    
-	    $scope.searchMessage = data.count > 0 ? "Hit " + data.count + ' items' : 'No results';
-	    $scope.paginate = data.paginate;		
 	    if (data.count == 1 && data.items[0].path) {
 		walkService.pathManager.showPath(data.items[0].path, true);
 	    }
@@ -388,11 +393,13 @@
 	    $http.get('/search?' + $.param($scope.searchForm)).success(searchCallback);
    
 	};
-	$('.pagination a').live('click', function () {
-	    $http.get($(this).attr('href')).success(searchCallback);
-	    return false;
-	});
+	$scope.getNext = function (params) {
+	    $http.get('/search?' + params).success(searchCallback);
+	};
 
+	$scope.loadPath = function () {
+	    walkService.pathManager.loadFromLocalStorage();
+	};
 	$scope.showPath = function (id) {
 	    
 	    $http.get('/show/' + id).success(function (data) {

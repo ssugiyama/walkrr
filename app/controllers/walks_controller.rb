@@ -95,7 +95,7 @@ class WalksController < ApplicationController
       .select(%w(id date start "end" length path))
       .page(page).per(per_page)
       .order(order)
-    
+
     walk_hashs = nil
     if @walks.total_count == 1
       walks_hash = @walks.map{|w| w.to_hash_with_path}
@@ -104,9 +104,10 @@ class WalksController < ApplicationController
     end
     result = {
       :items => walks_hash, 
-      :count => @walks.total_count,
-      :paginate => render_to_string(:partial => 'walks_pagination',  :formats => [:html] )
+      :total_count => @walks.total_count,
+      :current_page => @walks.current_page
     } 
+    result[:params] = params.keys.select{|key| key != :page }.map{|key| "#{key.to_s}=#{params[key]}"}.push("page=#{@walks.current_page+1}").join('&') unless @walks.last_page?
     respond_to do |format|
       format.json {render :json => result.to_json}
     end

@@ -115,10 +115,14 @@ td.name div {
 
 .table-wrapper {
     position: absolute;
-    bottom : 80px;
+    bottom : 10px;
     top : 350px;
     overflow: scroll;
     padding-right: 16px;
+}
+
+.table-wrapper button {
+    width: 350px;
 }
 
 .table-wrapper table {
