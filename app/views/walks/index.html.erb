@@ -92,13 +92,18 @@
 	      <input type="reset" value="reset" class="btn" />
 	    </div>
 	  </form>
-	  <p id="message" class="well well-small"><strong>{{searchMessage}}</strong></p>
+	  <p id="message" class="well well-small" ng-show="walks != null">
+	    <strong ng-switch on="total_count">
+	      <span ng-switch-when="0">No results</span>
+	      <span ng-switch-when="1">1 / 1 item</span>
+	      <span ng-switch-default>{{ walks.length }} / {{ total_count }} items</span>
+
+	    </strong> : <button ng-click="showPaths()" ng-show="walks.length > 0" class="btn" ><i class="icon-map-marker"></i>show</button></p>
 	  <div class="table-wrapper">
-	    <table class="table table-condensed table-striped">
+	    <table class="table table-condensed table-striped table-hover">
               <tbody id="tbody">
-		<tr ng-repeat="item in walks">
-		  <td><a href="javascript:void(0)" ng-click="showPath(item.id)" class="icon-play"></a>
-		  </td>
+		<tr ng-repeat="item in walks" ng-click="showPath(item.id)">
+		  <td>{{ $index + 1 }}</td>
 		  <td class="date">{{item.date}}</td>
 		  <td class="name"><div>{{item.start}}</div></td><td class="name"><div>{{item.end}}</div></td><td class="way">{{item.length | number:1  }}</td>
 		  <td>

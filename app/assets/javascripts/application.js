@@ -4,5 +4,7 @@
 //= require twitter/bootstrap
 //= require controllers
 //= require path_manager
-google.load("visualization", "1", {packages:["corechart"]});
+//= require jquery.flot
+//= require jquery.flot.resize
+
 

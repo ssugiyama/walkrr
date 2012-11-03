@@ -127,36 +127,22 @@
 	    this.plotElevation = function (results, status) {
 		if (status == google.maps.ElevationStatus.OK) {
 		    var elevations = results;
-		    //  this.infoWindow.open(this.map);
-		    //  this.infoWindow.setPosition(this.map.getCenter());
-		    // Extract the elevation samples from the returned results
-		    // and store them in an array of LatLngs.
 		    var elevationPath = [];
 		    for (var i = 0; i < results.length; i++) {
 			elevationPath.push(elevations[i].location);
 		    }
 		    this.elevationPath = elevationPath;
-		    
-		    // Extract the data from which to populate the chart.
-		    // Because the samples are equidistant, the 'Sample'
-		    // column here does double duty as distance along the
-		    // X axis.
-		    var data = new google.visualization.DataTable();
-		    data.addColumn('string', 'Sample');
-		    data.addColumn('number', 'Elevation');
+		    var data = [];
 		    for (var i = 0; i < results.length; i++) {
-			data.addRow(['', elevations[i].elevation]);
+			data.push([i, elevations[i].elevation]);
 		    }
-		    
 		    // Draw the chart using the data within its DIV.
 //		    $(this.elevationBox).dialog('open');
 		    
-		    this.chart.draw(data, {
-			legend: 'none',
-			titleY: 'Elevation (m)',
-			pointSize : 0,
+		    $.plot($(this.elevation), [data], {
+			xaxis : {show: false}, 
 			colors : ['#ff0000'],
-			vAxis : { format: '#,###' },
+			grid : { hoverable : true }, 
 		    });
             
 		}
@@ -302,7 +288,7 @@
 								      });
 	    google.maps.event.addListener(walkService.panorama, 'closeclick',  function (ev) {
 		scope.currentService = 'none';
-	});
+	    });
 	    walkService.map.setStreetView(walkService.panorama);
 
 	};
@@ -312,19 +298,16 @@
     module.directive('myElevation', function (walkService){
 	return function (scope, elm, attrs) {
 	    walkService.elevation = elm;
-	    walkService.chart = new google.visualization.AreaChart(angular.element(elm)[0]);
-
-
-	    google.visualization.events.addListener(walkService.chart, 'onmouseover', function (e){
-	    	var point = walkService.elevationPath[e.row];
-	    	walkService.serviceMarker.setMap(walkService.map);
-	    	walkService.serviceMarker.setPosition(point);
-	    	walkService.map.setCenter(point);
+	    $(elm).on("plothover", function (event, pos, item) {
+	     	var point = walkService.elevationPath[~~pos.x];
+		if (!point) return;
+	     	walkService.serviceMarker.setMap(walkService.map);
+	     	walkService.serviceMarker.setPosition(point);
+	     	walkService.map.setCenter(point);
 	    });
-	    google.visualization.events.addListener(walkService.chart, 'onmouseout', function (){
-	    	walkService.serviceMarker.setMap(null);
+	    $(elm).on("mouseout", function () {
+		walkService.serviceMarker.setMap(null);
 	    });
-
 	};
     });
 		     
@@ -341,9 +324,9 @@
 		$scope.walks = data.items;
 	    }
 	    $scope.params = data.params;
-	    $scope.searchMessage = data.total_count > 0 ? "Hit " + data.total_count + ' items' : 'No results';
+	    $scope.total_count = data.total_count;
 	    
-	    if (data.count == 1 && data.items[0].path) {
+	    if (data.total_count == 1 && data.items[0].path) {
 		walkService.pathManager.showPath(data.items[0].path, true);
 	    }
 	    $scope.result = {};
@@ -414,9 +397,7 @@
 	    
 	};
 	$scope.showPaths = function () {
-	    var ids =  Object.keys($scope.result).filter(function (item, index, array) {
-		return $scope.result[item];
-	    });
+	    var ids =  Object.keys($scope.result);
 
 	    $http.post('/show' , {id : ids}).success(function (data) {
 		for (var i = 0; i < data.length; i++) {
@@ -477,7 +458,7 @@
 	$scope.save = function () {
 	    $scope.selection.path = walkService.pathManager.getEncodedSelection();
 	    $http.post('/save', $scope.selection).success(function (data) {
-		$scope.selection = data.walk;
+		$scope.selection = data;
 		alert('saved successfully!');
 	    }).error(function (data) {
 		alert(data);
@@ -487,8 +468,8 @@
 	    $scope.selection = {};
 	};
 	$scope.showElevation = function () {
-	    walkService.requestElevation();
 	    $scope.currentService = 'elevation';
+	    walkService.requestElevation();
 	};
 	$scope.showPanorama = function () {
 
