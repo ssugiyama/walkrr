@@ -288,6 +288,7 @@
 								      });
 	    google.maps.event.addListener(walkService.panorama, 'closeclick',  function (ev) {
 		scope.currentService = 'none';
+		setTimeout(function () {scope.$digest();}, 0);
 	    });
 	    walkService.map.setStreetView(walkService.panorama);
 
@@ -316,7 +317,7 @@
 	
 //	$scope.selectionLength = 0;
 
-	function searchCallback (data) {
+	function searchCallback (data, show) {
 	    if (data.current_page > 1) {
 		$scope.walks.push.apply($scope.walks, data.items);
 	    }
@@ -326,7 +327,7 @@
 	    $scope.params = data.params;
 	    $scope.total_count = data.total_count;
 	    
-	    if (data.total_count == 1 && data.items[0].path) {
+	    if (show) {
 		walkService.pathManager.showPath(data.items[0].path, true);
 	    }
 	    $scope.result = {};
@@ -338,7 +339,7 @@
 	
 	if (location.search) {
 	    $http.get('/search' + location.search).success(function (data) {
-		searchCallback(data);
+		searchCallback(data, true);
 	    });
 	}
 	
@@ -373,7 +374,9 @@
 		$scope.searchForm.searchPath = "";
 	    }
 	    
-	    $http.get('/search?' + $.param($scope.searchForm)).success(searchCallback);
+	    $http.get('/search?' + $.param($scope.searchForm)).success(function (data) {
+		searchCallback(data, false);
+	    });
    
 	};
 	$scope.getNext = function (params) {
@@ -383,6 +386,16 @@
 	$scope.loadPath = function () {
 	    walkService.pathManager.loadFromLocalStorage();
 	};
+	$scope.resetAreas = function () {
+	    Object.keys(walkService.areas).forEach(function (id) {
+		walkService.areas[id].setMap(null);
+	    });
+	    walkService.areas = {};
+	};
+	$scope.setRadius = function (r) {
+	    walkService.distanceWidget.setRadius(r);
+	}
+
 	$scope.showPath = function (id) {
 	    
 	    $http.get('/show/' + id).success(function (data) {

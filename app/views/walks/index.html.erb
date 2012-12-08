@@ -31,6 +31,28 @@
 	      <li><a ng-click="loadPath()" href="#">load</a></li>	      
 	    </ul>
 	  </li>
+	  <li class="dropdown" ng-show="searchForm.type == 'areas'">
+	    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+	      Areas
+	      <b class="caret"></b>
+	    </a>
+	    <ul class="dropdown-menu">
+	      <li><a ng-click="resetAreas()"  href="#">reset</a></li>	      
+	    </ul>
+	  </li>
+	  <li class="dropdown" ng-show="searchForm.type == 'neighbor'">
+	    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+	      Neighbor
+	      <b class="caret"></b>
+	    </a>
+	    <ul class="dropdown-menu">
+	      <li><a ng-click="setRadius(1000)"  href="#">radius: 1km</a></li>	      
+	      <li><a ng-click="setRadius(500)"  href="#">radius: 500m</a></li>	      
+	      <li><a ng-click="setRadius(250)"  href="#">radius: 250m</a></li>	      
+	      <li><a ng-click="setRadius(100)"  href="#">radius: 100m</a></li>	      
+	    </ul>
+	  </li>
+
 	  <li><a ng-click="showElevation()" href="#">elevation</a></li>
           <li><a ng-click="showPanorama()" href="#">street view</a></li>
 <!--	
@@ -119,35 +141,33 @@
 	</div>
 	<div class="tab-pane" id="admin_pane">
 	  <form ng-sbmit="save()" class="form-horizontal">
-            <div class="control-group"><label  class="control-label" for="id">id</label>
+            <div class="control-group">
+	      <label class="control-label" for="id">id</label>
 	      <div class="controls">
-		<input type="text" readonly="readonly" ng-model="selection.id" class="span2" />
+		<input type="text" readonly="readonly" ng-model="selection.id" class="input-medium" />
 	      </div>
 	    </div>
-            <div class="control-group"><label class="control-label" for="date">date</label>
+            <div class="control-group">
+	      <label class="control-label" for="date">date</label>
 	      <div class="controls">
-		<input type="date" name="date" ng-model="selection.date" class="span2"  />
+		<input type="date" name="date" ng-model="selection.date" class="input-medium" />
 	      </div>
 	    </div>
             <div class="control-group">
               <label class="control-label" for="start">start</label>
 	      <div class="controls">
-		<input type="text" name="start" ng-model="selection.start" class="span2" />
+		<input type="text" name="start" ng-model="selection.start" class="input-medium" />
 	      </div>
             </div>
 	  
             <div class="control-group">
               <label class="control-label" for="end">end</label>
 	      <div class="controls">
-		<input type="text" name="end" ng-model="selection.end" class="span2"  />
+		<input type="text" name="end" ng-model="selection.end" class="input-medium" />
 	      </div>
             </div>
 	    <input type="hidden" name="save_path" ng-mode="selection.path"  />
-	    <div  class="form-actions">
-	      <button ng-click="save()" class="btn btn-primary">save</button>
-	      <button ng-click="destroy()" class="btn btn-danger">delete</button>
-	      <button ng-click="resetAdminForm()" class="btn">reset</button>
-	    </div>
+	    <div  class="form-actions"><button ng-click="save()" class="btn btn-primary">save</button><button ng-click="destroy()" class="btn btn-danger">delete</button><button ng-click="resetAdminForm()" class="btn">reset</button></div>
 	  </form>
 	</div>
       </div>
