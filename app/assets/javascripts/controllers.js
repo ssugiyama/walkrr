@@ -374,13 +374,16 @@
 		$scope.searchForm.searchPath = "";
 	    }
 	    
-	    $http.get('/search?' + $.param($scope.searchForm)).success(function (data) {
+	    $http.get('/search.json?' + $.param($scope.searchForm)).success(function (data) {
 		searchCallback(data, false);
 	    });
    
 	};
 	$scope.getNext = function (params) {
-	    $http.get('/search?' + params).success(searchCallback);
+	    $http.get('/search?' + params).success(function (data)
+						   {
+						       searchCallback(data, false);
+						   });
 	};
 
 	$scope.loadPath = function () {
@@ -411,7 +414,7 @@
 	};
 	$scope.showPaths = function () {
 	    var ids =  Object.keys($scope.result);
-
+console.debug(ids);
 	    $http.post('/show' , {id : ids}).success(function (data) {
 		for (var i = 0; i < data.length; i++) {
 		    walkService.pathManager.showPath(data[i].path, false);

@@ -1,9 +1,9 @@
-module GeoRuby
-  module SimpleFeatures
-    class MultiPolygon
+module RGeo
+  module Feature
+    module MultiPolygon
 
       def as_encoded_paths
-        map {|polygon|  polygon[0].as_encoded_path }.join(" ") 
+        map {|polygon|  polygon.exterior_ring.as_encoded_path }.join(" ") 
       end
 
     end

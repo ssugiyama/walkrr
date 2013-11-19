@@ -1,10 +1,10 @@
 class WalksController < ApplicationController
-  include GeoRuby::SimpleFeatures
   include Kaminari::ActionViewExtension
   XMPS_SRID = 4301
   EARTH_RADIUS = 6370986
   DEFAULT_SRID = 4326
   DEG_TO_RAD = Math::PI/180
+
   def index
     year_range = ActiveRecord::Base.connection.select_one("select extract(year from min(date)) as min, extract(year from max(date)) as max from walks")
     @year_opts = [''] + (year_range['min'].to_i .. year_range['max'].to_i).to_a.reverse
@@ -21,9 +21,10 @@ class WalksController < ApplicationController
   end
 
   def add_area
+    @factory = get_factory
     latitude = params[:latitude].to_f
     longitude = params[:longitude].to_f
-    point = Point.from_x_y(longitude, latitude, DEFAULT_SRID)
+    point = @factory.point(longitude, latitude)
     area = Area.find(:first, :conditions => ["st_contains(the_geom, :point)", {:point => point}])
 
     respond_to do |format|
@@ -33,6 +34,7 @@ class WalksController < ApplicationController
   end
 
   def search
+    @factory = get_factory
     id = params[:id]
     date = params[:date]
     radius = params[:radius]
@@ -71,12 +73,12 @@ class WalksController < ApplicationController
     else
       case params[:type]
       when "neighbor"
-        point = Point.from_x_y(longitude.to_f, latitude.to_f, DEFAULT_SRID)
+        point = @factory.point(longitude.to_f, latitude.to_f)
         #      sqls << "st_dwithin(transform(path, :srid), transform(:point, :srid), :distance)"
         dlat = radius.to_f / DEG_TO_RAD / EARTH_RADIUS
         dlon = dlat / Math.cos(latitude.to_f * DEG_TO_RAD)
-        pll = Point.from_x_y(longitude.to_f-dlon, latitude.to_f-dlat, DEFAULT_SRID)
-        pur = Point.from_x_y(longitude.to_f+dlon, latitude.to_f+dlat, DEFAULT_SRID)
+        pll = @factory.point(longitude.to_f-dlon, latitude.to_f-dlat)
+        pur = @factory.point(longitude.to_f+dlon, latitude.to_f+dlat)
         sqls << "st_makebox2d(:pll, :pur) && path and st_distance_sphere(path, :point) <= :radius"
         values.merge!({:radius => radius.to_f, :point => point,
                         :pll => pll, :pur => pur
@@ -85,7 +87,7 @@ class WalksController < ApplicationController
         sqls << "id in (select distinct id from walks inner join areas on jcode in (:areas) where path && the_geom and intersects(path, the_geom))"
         values.merge!({:areas =>params[:areas].split(/,/)})
       when "cross"
-        path = LineString.from_encoded_path(params[:searchPath], DEFAULT_SRID)
+        path = GeometryEncodeUtil.line_string_from_encoded_path(@factory, params[:searchPath])
         sqls << "path && :path and intersects(path, :path)"
         values.merge!({:path => path})
       end
@@ -134,7 +136,8 @@ class WalksController < ApplicationController
   end
 
   def save
-    path = LineString.from_encoded_path( params[:path], DEFAULT_SRID)
+    @factory = get_factory
+    path = GeometryEncodeUtil.line_string_from_encoded_path(@factory, params[:path])
     if params[:id].blank?
       #temporary hack for https://github.com/fragility/spatial_adapter/issues/26
       @walk = Walk.create(:date => params[:date], :start => params[:start], :end => params[:end])
@@ -234,6 +237,10 @@ class WalksController < ApplicationController
       transform_path(LineString.from_coordinates(points, XMPS_SRID), DEFAULT_SRID).text_representation
     end
     
+  end
+
+  def get_factory
+    RGeo::Cartesian.simple_factory( :srid => DEFAULT_SRID)    
   end
   
 end

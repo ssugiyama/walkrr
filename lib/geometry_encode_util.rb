@@ -35,4 +35,19 @@ module GeometryEncodeUtil
     end
     fs
   end
+
+  def line_string_from_encoded_path(factory, str)
+    fs = decode_floats(str)
+    points = []
+    p1 = p2 = 0
+    while f1 = fs.shift do
+      f2 = fs.shift
+      p1 += f1
+      p2 += f2
+      p = factory.point(p2, p1)
+      points << p
+    end
+    factory.line_string(points)
+  end
+
 end
