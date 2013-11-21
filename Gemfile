@@ -15,7 +15,7 @@ gem 'settingslogic'
 gem 'jquery-rails'
 gem 'angularjs-rails'
 gem 'flot-rails'
-gem 'twitter-bootstrap-rails'
+gem 'bootstrap-sass-rails'
 gem 'unicorn'
 gem 'uglifier'
 # Use unicorn as the web server

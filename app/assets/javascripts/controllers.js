@@ -414,7 +414,6 @@
 	};
 	$scope.showPaths = function () {
 	    var ids =  Object.keys($scope.result);
-console.debug(ids);
 	    $http.post('/show' , {id : ids}).success(function (data) {
 		for (var i = 0; i < data.length; i++) {
 		    walkService.pathManager.showPath(data[i].path, false);
@@ -427,7 +426,7 @@ console.debug(ids);
 	};
 
 	$scope.download = function (id) {
-	    window.location.href= "/export/" + id;
+	    window.location.href= "/export/" + id + '.kml';
 	};
 	$scope.export = function () {
 	    var ids =  Object.keys($scope.result).filter(function (item, index, array) {

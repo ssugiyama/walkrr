@@ -1,6 +1,6 @@
 
 /*
- *= require bootstrap_and_overrides
+ *= require twitter/bootstrap
  */
 #map img { max-width: none; }
 #elevation-box img { max-width: none; }
@@ -122,7 +122,7 @@ tr {
 .table-wrapper {
     position: absolute;
     bottom : 10px;
-    top : 350px;
+    top : 300px;
     overflow: scroll;
     padding-right: 16px;
 }

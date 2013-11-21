@@ -15,10 +15,9 @@
 
   </head>
   <body ng-controller="WalkController">
-    <div class="navbar" id="nav">
-      <div class="navbar-inner">
-	<a class="brand" href="https://github.com/chez-sugi/walkrr">Walkrr</a>
-	<ul class="nav">
+    <div class="navbar navbar-default navbar-static-top" id="nav" role="navigation">
+	<a class="navbar-brand" href="https://github.com/chez-sugi/walkrr">Walkrr</a>
+	<ul class="nav navbar-nav">
 	  <li class="dropdown">
 	    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
 	      Path
@@ -63,7 +62,6 @@
 -->
 	</ul>
         <p class="navbar-text">Length: <span id="length">{{selectionLength | number:2}}</span>km</p>
-      </div>
     </div>
     <div id="side">
       <ul class="nav nav-tabs">
@@ -72,26 +70,26 @@
       </ul>
       <div class="tab-content">
 	<div id="search_pane" class="tab-pane active">
-	  <form class="form-horizontal">
+	  <form class="form-horizontal col-xs-12" role="form">
 	    <input type="hidden" name="latitude" value="{{searchForm.latitude}}" />
 	    <input type="hidden" name="longitude" value="{{searchForm.longitude}}" />
 	    <input type="hidden" name="radius" value="{{searchForm.radius}}" />
 	    <input type="hidden" name="areas" value="{{searchForm.areas}}"  />
 	    <input type="hidden" name="search_path" value="{{searchForm.searchPath}}"  />
-            <div id="typeBox" class="control-group">
-	      <label class="checkbox inline">
-		<input type="radio" name="type" ng-model="searchForm.type" value="neighbor" id="type_neighbor" /> neighbor</label>
-	      <label class="checkbox inline">
+            <div id="typeBox" class="form-group">
+	      <label class="radio-inline col-xs-3 col-xs-offset-1">
+		<input type="radio" name="type" ng-model="searchForm.type" value="neighbor" id="type_neighbor"  /> neighbor</label>
+	      <label class="radio-inline col-xs-2">
 		<input type="radio" name="type" ng-model="searchForm.type" value="areas" id="type_areas" /> areas</label>
-	      <label class="checkbox inline">
+	      <label class="radio-inline col-xs-2">
 		<input type="radio" name="type" ng-model="searchForm.type" value="cross" id="type_cross" /> cross</label>
-	      <label class="checkbox inline">
+	      <label class="radio-inline col-xs-2">
 		<input type="radio" name="type" ng-model="searchForm.type" value="all" id="type_all" checked /> all</label>
             </div>
-            <div class="control-group">
-              <label class="control-label" for="order">order</label>
-	      <div class="controls">
-		<select ng-model="searchForm.order" class="span2">
+            <div class="form-group">
+              <label class="control-label col-xs-3" for="order">order</label>
+	      <div class="col-xs-9">
+		<select ng-model="searchForm.order" class="form-control">
 		  <option value="new_first">new first</option>
 		  <option value="old_first">old first</option>
 		  <option value="long_first">long first</option>
@@ -103,25 +101,27 @@
 		</select>
 	      </div>
 	    </div>
-	    <div class="control-group">
-	      <label class="control-label" for="per_page">per page</label>
-	      <div class="controls">
-		<input type="text" ng-model="searchForm.per_page"  class="span2" />
+	    <div class="form-group">
+	      <label class="control-label col-xs-3" for="per_page">per page</label>
+	      <div class="col-xs-9">
+		<input type="text" ng-model="searchForm.per_page"  class="form-control" />
 	      </div>
 	    </div>
-	    <div  class="form-actions">
-	      <button ng-click="search()" class="btn btn-primary"><i class="icon-search"></i>search</button>
-	      <input type="reset" value="reset" class="btn" />
+	    <div  class="form-group">
+	      <div class=" col-xs-offset-3 col-xs-9">
+		<button ng-click="search()" class="btn btn-primary"><span class="glyphicon glyphicon-search"></span>search</button>
+		<input type="reset" value="reset" class="btn" />
+	      </div>
 	    </div>
 	  </form>
-	  <p id="message" class="well well-small" ng-show="walks != null">
+	  <p id="message" class="well well-sm col-xs-12" ng-show="walks != null">
 	    <strong ng-switch on="total_count">
 	      <span ng-switch-when="0">No results</span>
 	      <span ng-switch-when="1">1 / 1 item</span>
 	      <span ng-switch-default>{{ walks.length }} / {{ total_count }} items</span>
 
-	    </strong> : <button ng-click="showPaths()" ng-show="walks.length > 0" class="btn" ><i class="icon-map-marker"></i>show all</button></p>
-	  <div class="table-wrapper">
+	    </strong> : <button ng-click="showPaths()" ng-show="walks.length > 0" class="btn" ><span class="glyphicon glyphicon-map-marker"></span>show all</button></p>
+	  <div class="table-wrapper col-xs-12">
 	    <table class="table table-condensed table-striped table-hover">
               <tbody id="tbody">
 		<tr ng-repeat="item in walks" ng-click="showPath(item.id)">
@@ -129,7 +129,7 @@
 		  <td class="date">{{item.date}}</td>
 		  <td class="name"><div>{{item.start}}</div></td><td class="name"><div>{{item.end}}</div></td><td class="way">{{item.length | number:1  }}</td>
 		  <td>
-		    <a href="javascript:void(0)" ng-click="download(item.id)" class="icon-download"></a>
+		    <a href="javascript:void(0)" ng-click="download(item.id)" class="glyphicon glyphicon-download"></a>
 		  </td>
 		</tr>
 		
@@ -140,34 +140,40 @@
       
 	</div>
 	<div class="tab-pane" id="admin_pane">
-	  <form ng-sbmit="save()" class="form-horizontal">
-            <div class="control-group">
-	      <label class="control-label" for="id">id</label>
-	      <div class="controls">
-		<input type="text" readonly="readonly" ng-model="selection.id" class="input-medium" />
+	  <form ng-sbmit="save()" class="form-horizontal col-xs-12" role="form">
+            <div class="form-group">
+	      <label class="control-label col-xs-3" for="id">id</label>
+	      <div class="col-xs-9">
+		<input type="text" readonly="readonly" ng-model="selection.id" class="form-control" />
 	      </div>
 	    </div>
-            <div class="control-group">
-	      <label class="control-label" for="date">date</label>
-	      <div class="controls">
-		<input type="date" name="date" ng-model="selection.date" class="input-medium" />
+            <div class="form-group">
+	      <label class="control-label col-xs-3" for="date">date</label>
+	      <div class="col-xs-9">
+		<input type="date" name="date" ng-model="selection.date" class="form-control" />
 	      </div>
 	    </div>
-            <div class="control-group">
-              <label class="control-label" for="start">start</label>
-	      <div class="controls">
-		<input type="text" name="start" ng-model="selection.start" class="input-medium" />
+            <div class="form-group">
+              <label class="control-label col-xs-3" for="start">start</label>
+	      <div class="col-xs-9">
+		<input type="text" name="start" ng-model="selection.start" class="form-control" />
 	      </div>
             </div>
 	  
-            <div class="control-group">
-              <label class="control-label" for="end">end</label>
-	      <div class="controls">
-		<input type="text" name="end" ng-model="selection.end" class="input-medium" />
+            <div class="form-group">
+              <label class="control-label col-xs-3" for="end">end</label>
+	      <div class="col-xs-9">
+		<input type="text" name="end" ng-model="selection.end" class="form-control" />
 	      </div>
             </div>
 	    <input type="hidden" name="save_path" ng-mode="selection.path"  />
-	    <div  class="form-actions"><button ng-click="save()" class="btn btn-primary">save</button><button ng-click="destroy()" class="btn btn-danger">delete</button><button ng-click="resetAdminForm()" class="btn">reset</button></div>
+	    <div  class="form-group">
+	      <div class="col-xs-offset-3 col-xs-9">
+		<button ng-click="save()" class="btn btn-primary"><span class="glyphicon glyphicon-record"></span>save</button>
+		<button ng-click="destroy()" class="btn btn-danger"><span class="glyphicon glyphicon-remove"></span>delete</button>
+		<button ng-click="resetAdminForm()" class="btn">reset</button>
+	      </div>
+	    </div>
 	  </form>
 	</div>
       </div>
@@ -182,11 +188,11 @@
       <div id="panorama-box" ng-show="currentService == 'panorama'">
 	<div id="panorama" my-panorama></div>
 	<div id="panorama_control">
-	  <button class="btn icon-fast-backward" ng-click="backwardPanorama()"></button>
-	  <button class="btn icon-step-backward" ng-click="prevPanorama()"></button>
+	  <button class="btn" ng-click="backwardPanorama()"><apan class="glyphicon glyphicon-fast-backward"></span></button>
+	  <button class="btn" ng-click="prevPanorama()"><apan class="glyphicon glyphicon-step-backward"></span></button>
 	  <div><span>{{panoramaIndex}}</span> / <span>{{panoramaCount}}</span></div>
-	  <button class="btn icon-step-forward" ng-click="nextPanorama()"></button>
-	  <button class="btn icon-fast-forward" ng-click="forwardPanorama()"></button>
+	  <button class="btn" ng-click="nextPanorama()"><apan class="glyphicon glyphicon-step-forward"></span></button>
+	  <button class="btn" ng-click="forwardPanorama()"><apan class="glyphicon glyphicon-fast-forward"></span></button>
 	</div>
       </div>
     </div>
